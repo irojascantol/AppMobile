@@ -1,0 +1,10 @@
+@media (min-width: 992px) {
+    .navbar-expand-lg {
+      flex-direction: row;
+    }
+    .navbar-expand-lg .navbar-collapse {
+      flex-basis: 0;
+      flex-grow: 1;
+      align-self: flex-start;
+    }
+  }
