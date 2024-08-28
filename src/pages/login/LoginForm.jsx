@@ -1,43 +1,48 @@
 import React, { useState } from "react";
-import { Form, Button, Alert } from "react-bootstrap";
-import "./../../style/login.css";
-
+import { MySelector } from "../../componentes/Selector";
+import { Form, Button, Alert, Dropdown } from "react-bootstrap";
+import { Login } from "../../services/login";
+import { delay } from "../../utils/delay";
 import Logo from "./assets/distrimax.png";
+import 'C:/AppMobile/src/style/login.css'
+import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const LoginForm = () => {
   const [inputUsername, setInputUsername] = useState("");
   const [inputPassword, setInputPassword] = useState("");
-
+  const [inputCompany,  setInputCompany] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
+  //inicia proceso de autenticacion
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    await delay(500);
-    console.log(`Username :${inputUsername}, Password :${inputPassword}`);
-    if (inputUsername !== "admin" || inputPassword !== "admin") {
+    const responseJson = await Login(inputUsername, inputPassword, inputCompany);
+    await delay(200);
+    setLoading(false);
+    if (!responseJson.detail) {
+      sessionStorage.setItem("CDTToken", responseJson);
+      setShow(false);
+      navigate('/main')
+    } else {            
       setShow(true);
     }
-    setLoading(false);
   };
-
-  const handlePassword = () => {};
-
-  function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+  
+  const handlePassword = () => {alert("Contactar con TI Cantol")};
 
   return (
     <div
-      className="sign-in__wrapper"
-    //   style={{ backgroundImage: `url(${BackgroundImage})` }}
+      className="sign-in__wrapper tw-bg-gray-100 tw-flex tw-items-center tw-h-screen"
     >
       {/* Overlay */}
-      <div className="sign-in__backdrop tw-bg-gray-200"></div>
+      <div className="sign-in__backdrop tw-bg-gray-100 tw-h-screen"></div>
       {/* Form */}
       <Form className="shadow p-4 bg-white rounded" onSubmit={handleSubmit}>
         {/* Header */}
+        {/* Comienza logo */}
         <div style={{width: "200px", margin: "0 auto"}}>
             <img
             className="img-thumbnail mx-auto d-block mb-2"
@@ -46,8 +51,10 @@ const Login = () => {
             alt="logo"
             />
         </div>
+        {/* Termina logo */}
+
         <div className="h4 mb-2 text-center">Ventas Mobile</div>
-        {/* ALert */}
+        {/* Empieza aviso contraseña o clave incorrecta */}
         {show ? (
           <Alert
             className="mb-2"
@@ -60,6 +67,14 @@ const Login = () => {
         ) : (
           <div />
         )}
+
+        {/* Empieza combo empresa */}
+        <div className="tw-my-3 tw-w-full">
+          <MySelector width={'w-100'} initText={'Empresa'} setInputCompany={setInputCompany}/>
+        </div>
+        {/* Termina combo empresa */}
+
+        {/* Termina aviso contraseña o clave incorrecta */}
         <Form.Group className="mb-2" controlId="username">
           <Form.Label>Usuario</Form.Label>
           <Form.Control
@@ -80,16 +95,13 @@ const Login = () => {
             required
           />
         </Form.Group>
-        <Form.Group className="mb-2" controlId="checkbox">
-          <Form.Check type="checkbox" label="Recuerdame" />
-        </Form.Group>
         {!loading ? (
-          <Button className="w-100" variant="primary" type="submit">
+          <Button className="w-100 tw-mt-3" variant="primary" type="submit">
             Ingresar
           </Button>
         ) : (
-          <Button className="w-100" variant="primary" type="submit" disabled>
-            Logging In...
+          <Button className="w-100 tw-mt-3" variant="primary" type="submit" disabled>
+            Ingresando...
           </Button>
         )}
         <div className="d-grid justify-content-end">
@@ -110,4 +122,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginForm;

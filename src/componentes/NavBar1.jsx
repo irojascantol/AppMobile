@@ -1,172 +1,87 @@
+import { useContext, useState } from 'react';
+import { NavItem } from 'react-bootstrap';
+import {NavLink} from 'react-bootstrap';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { commercialContext } from '../context/ComercialContext';
+import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import "./style.css"
-import { Button, Offcanvas, Collapse, Form, NavItem, NavLink, NavbarToggle  } from 'react-bootstrap';
-import { useState } from 'react';
+import Spinner from 'react-bootstrap/Spinner';
+import {
+    BsTruck ,
+    BsFileEarmarkCheck
+} from "react-icons/bs";
+import "../style/NavBar1.css"
 
-function NavBar1() {
-    const [isOpen, setIsOpen] = useState(false);
+const NavBar1 = () => {
+    const navigate = useNavigate()
+    const [expanded,  setExpanded] = useState(false);
+    const {
+      loading,
+    } = useContext(commercialContext)
 
-    const navBarData = [
-        {
-            label: "Tutorials",
-            submenu: [
-                {
-                    label: "React",
-                    url: "/react",
-                    submenu: [
-                        {
-                            label: "Hooks",
-                            url: "/react/hooks",
-                        },
-                        {
-                            label: "Context",
-                            url: "/react/context",
-                        },
-                    ],
-                },
-                {
-                    label: "JavaScript",
-                    url: "/javascript",
-                },
-            ],
-        },
-        {
-            label: "Home",
-            url: "/",
-        },
-        {
-            label: "About",
-            url: "/about",
-        },
-    ];
+    const innerNavigate = (path) => {
+      setExpanded(false)
+      navigate(path)
+    }
 
-    const menuShow = (mItems) => {
-        return mItems.map(
-            (item, index) => {
-                if (item.submenu) {
-                    return (
-                        <NavDropdown
-                            data-bs-theme="dark"
-                            title={
-                                item.label
-                            }
-                            key={index}
-                            className="dropdown-menu-dark dropend"
-                                >
-                            {menuShow(
-                                item.submenu
-                            )}
-                        </NavDropdown>
-                    );
-                } else {
-                    return (
-                        <Nav.Link
-                            href={
-                                item.url
-                            }
-                            key={index}
-                            >
-                            {item.label}
-                        </Nav.Link>
-                    );
-                }
-            }
-        );
-    };
-
-    const navStyle = {
-        color: "dark",
-        fontWeight: "bold",
-    };
-
-    const [show, setShow] = useState(false);
-
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-
-  return (
-    <>
-      <Button variant="primary" onClick={handleShow}>
-        Toggle Offcanvas
-      </Button>
-
-      <Offcanvas show={show} onHide={handleClose} placement="start" className="bg-dark text-white">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Empresa cantol</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
+    return (
+    <div>
+      <Navbar expanded={expanded} expand="xl" color='dark' className="bg-body-tertiary border border-indigo-600">
+        <Container>
+          <Navbar.Brand href="#home">Inicio</Navbar.Brand>
+          <div className='tw-flex tw-content-center tw-gap-2'>
+            {loading && (
+              <div>
+                <Spinner animation="border" role="status" variant='secondary'/>
+              </div>
+            )}
             <div>
-                <div className='tw-h-32'>
-                    <NavLink href="#" onClick={handleClose} className='text-white'>Link</NavLink>
-                </div>
-                <div>
-                <NavLink href="#" onClick={handleClose} className='text-white'>Link</NavLink>
-                </div>
-                <div>
-                <NavLink href="#" onClick={handleClose} className='text-white'>Link</NavLink>
-                </div>
+              <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={()=>setExpanded(!expanded)}/>
             </div>
-            {/* <Nav className="ms-auto">
-                    <NavItem>
-                        <NavLink href="#" className='text-white'>Home</NavLink>
-                    </NavItem>
-                    <NavItem>
-                        <NavLink href="#">Link</NavLink>
-                    </NavItem>
-                    <NavItem>
-                        <NavLink href="#" onClick={handleClose}>Link</NavLink>
-                    </NavItem>
-            </Nav> */}
-          {/* Produccion */}
-        </Offcanvas.Body>
-      </Offcanvas>
-    </>
-    // <Navbar expand="lg" bg="dark" variant="dark" className="justify-content-end">
-        //     <Navbar.Brand href="#">Navbar</Navbar.Brand>
-        //     <NavbarToggle aria-controls="basic-navbar-nav" onClick={handleToggle}>
-        //     <span className="navbar-toggler-icon" />
-        //     </NavbarToggle>
-        //     <Collapse in={isOpen} direction="rtl" className="navbar-collapse">
-        //         <Nav className="ms-auto">
-        //         <NavItem>
-        //             <NavLink href="#">Home</NavLink>
-        //         </NavItem>
-        //         <NavItem>
-        //             <NavLink href="#">Link</NavLink>
-        //         </NavItem>
-        //         <NavItem>
-        //             <NavLink href="#">Link</NavLink>
-        //         </NavItem>
-        //         </Nav>
-        //     </Collapse>
-        // </Navbar>
-    // // <Navbar expand="lg" bg="dark" variant="dark" className="bg-body-tertiary">
-    // // <Navbar collapseOnSelect expand={true} bg="dark" variant="dark">
-    // // <Navbar expand="lg" className='tw-bg-black'>
-    // <Navbar collapseOnSelect expand="lg" bg="dark" variant='dark'>
-    //   {/* <Container> */}
-    //     <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
-    //     <Navbar.Toggle aria-controls="basic-navbar-nav" />
-    //     {/* <Navbar.Collapse id="basic-navbar-nav"> */}
-    //     <Collapse in={true}>
-    //             <Nav className="ms-auto">
-    //                 <NavItem>
-    //                 <NavLink href="#">Home</NavLink>
-    //                 </NavItem>
-    //                 <NavItem>
-    //                 <NavLink href="#">Link</NavLink>
-    //                 </NavItem>
-    //                 {/* {menuShow(navBarData)} */}
-    //             </Nav>
-    //     </Collapse>
-    //     {/* </Navbar.Collapse> */}
-    //   {/* </Container> */}
-    // </Navbar>
+          </div>
+          <Navbar.Collapse id="basic-navbar-nav" expand="xl" className=''>
+            <Nav className="me-auto tw-mt-4" expand="xl">
+              <hr></hr>
+              <NavItem className='nav-item-custom-height'>
+                  <div className='nav-item-custom-height tw-w-full' onClick={()=>{innerNavigate('/main/entrega')}}>
+                      <NavLink href="#">Entregas</NavLink>
+                      <i className="tw-ml-2"><BsTruck size={21}/></i>
+                  </div>
+              </NavItem>
+              <hr></hr>
+              <NavDropdown title="Pedidos" id="basic-nav-dropdown" className='nav-dropdown-custom-height'>
+                  <NavItem className='nav-item-custom-height'>
+                    <div className='nav-item-custom-height tw-w-full' onClick={()=>{innerNavigate('/main/nuevopedido')}}>
+                      <NavLink href="#">Nuevo pedido</NavLink>
+                      <i className="tw-ml-2"><BsFileEarmarkCheck size={21}/></i>
+                    </div>
+                  </NavItem>
+                  <NavDropdown title="Estados" id="basic-nav-dropdown" className='nav-dropdown-custom-height'>
+                      <NavDropdown.Item href="#">Aprobados</NavDropdown.Item>
+                      <NavDropdown.Divider />
+                      <div className='tw-w-full' onClick={()=>{innerNavigate('/main/pedido/pendiente')}}>
+                        <NavDropdown.Item href="#">Pendientes</NavDropdown.Item>
+                      </div>
+                      <NavDropdown.Divider />
+                      <NavDropdown.Item href="#">Rechazados</NavDropdown.Item>
+                  </NavDropdown>
+              </NavDropdown>
+              <hr></hr>
+              <NavItem className='nav-item-custom-height'>
+                  <div onClick={()=>{sessionStorage.removeItem("CDTToken")}}>
+                    <NavLink href="/comercial">Salir</NavLink>
+                  </div>
+              </NavItem>
+              <hr></hr>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      <Outlet/>
+    </div>
   );
 }
-//react?
 
-export default NavBar1;
+export { NavBar1 };
