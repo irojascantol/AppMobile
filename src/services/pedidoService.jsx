@@ -25,7 +25,7 @@ export async function getPedido(innerParams, state) {
 
     }catch(error){
         console.log(`An Error ocurred: (PedidoService) _ ${error}`);
-        alert(`An Error ocurred: (PedidoService) _ ${error}`)
+        // alert(`An Error ocurred: (PedidoService) _ ${error}`)
         return [];
     }
 }

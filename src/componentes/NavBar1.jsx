@@ -59,7 +59,9 @@ const NavBar1 = () => {
                     </div>
                   </NavItem>
                   <NavDropdown title="Estados" id="basic-nav-dropdown" className='nav-dropdown-custom-height'>
-                      <NavDropdown.Item href="#">Aprobados</NavDropdown.Item>
+                      <div className='tw-w-full' onClick={()=>{innerNavigate('/main/pedido/aprobado')}}>
+                        <NavDropdown.Item href="#">Aprobados</NavDropdown.Item>
+                      </div>
                       <NavDropdown.Divider />
                       <div className='tw-w-full' onClick={()=>{innerNavigate('/main/pedido/pendiente')}}>
                         <NavDropdown.Item href="#">Pendientes</NavDropdown.Item>

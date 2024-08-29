@@ -6,6 +6,9 @@ const commercialContext = createContext()
 function ComercialContext({children}) {
     const [isLogin, setIsLogin] = useState(sessionStorage.getItem("CDTToken"));
     const [loading, setLoading] = useState(false);
+    const [showSecurity, setShowSecurity] = useState(false);
+    const handleShow = () => setShowSecurity(true);
+    const handleClose = () => setShowSecurity(false);
   
   return (
     <commercialContext.Provider value={
@@ -13,7 +16,10 @@ function ComercialContext({children}) {
         isLogin,
         setIsLogin,
         loading,
-        setLoading
+        setLoading,
+        showSecurity,
+        handleShow,
+        handleClose
       }
     }>
         {children}

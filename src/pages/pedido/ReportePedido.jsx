@@ -9,21 +9,23 @@ export default function ReportePedido() {
     const params = useParams();
     const [listReporte, setListReporte] = useState([]);
     const {
-        setLoading
+        setLoading,
+        handleShow,
     } = useContext(commercialContext);
 
     useEffect(()=>{
         const waitFunc = async () => {
             setLoading(true);
-            const {company, username} = await decodeJWT();
-            const response = await getPedido({usuario_codigo: username}, params.reporte);
+            const {username} = await decodeJWT();
+            const response = await getPedido({usuario_codigo: username}, params.reporte)
+            !!response.lenght || handleShow()
             setLoading(false);
             await setListReporte(response);
     };
         waitFunc();
-    }, []);
+    }, [params]);
 
     return (
-        <MyListGroup data={listReporte} plantilla="pendiente"/>
+        <MyListGroup data={listReporte} plantilla={params.reporte}/>
     )
 }

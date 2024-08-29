@@ -1,7 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { MiRutas } from './routers/rutas'
-import { NavBar1 } from "./componentes/NavBar1";
 import { ComercialContext } from "./context/ComercialContext";
+import NoAutorizado from "./componentes/modal/autorizacion";
 // import './App.css'
 
 function App() {
@@ -9,6 +9,7 @@ function App() {
     <>
       <BrowserRouter basename="comercial">
         <ComercialContext>
+          <NoAutorizado/>
           <div className='page-content'>
             <MiRutas/>
           </div>
