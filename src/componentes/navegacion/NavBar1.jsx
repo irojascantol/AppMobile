@@ -2,23 +2,26 @@ import { useContext, useState } from 'react';
 import { NavItem } from 'react-bootstrap';
 import {NavLink} from 'react-bootstrap';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { commercialContext } from '../context/ComercialContext';
+import { commercialContext } from '../../context/ComercialContext';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Spinner from 'react-bootstrap/Spinner';
+
 import {
     BsTruck ,
-    BsFileEarmarkCheck
+    BsFileEarmarkCheck,
+    BsFillPersonFill,
 } from "react-icons/bs";
-import "../style/NavBar1.css"
+import "../../style/NavBar1.css"
 
 const NavBar1 = () => {
     const navigate = useNavigate()
     const [expanded,  setExpanded] = useState(false);
     const {
       loading,
+      userName,
     } = useContext(commercialContext)
 
     const innerNavigate = (path) => {
@@ -30,7 +33,14 @@ const NavBar1 = () => {
     <div>
       <Navbar expanded={expanded} expand="xl" color='dark' className="bg-body-tertiary border border-indigo-600">
         <Container>
-          <Navbar.Brand href="#home">Inicio</Navbar.Brand>
+          <Navbar.Brand href="/comercial/main" className='tw-h-12'>
+            <div className='tw-h-full tw-flex tw-gap-2 tw-justify-center tw-items-center'>
+              <div className='tw-block tw-h-full'>
+                <i className="tw-ml-2 tw-h-fit"><BsFillPersonFill size={26} color='gray'/></i>
+              </div>
+                <p className='tw-m-0 tw-h-fit tw-text-gray-500 tw-font-mono'>{userName || 'user'}</p>
+            </div>
+          </Navbar.Brand>
           <div className='tw-flex tw-content-center tw-gap-2'>
             {loading && (
               <div>
@@ -67,7 +77,9 @@ const NavBar1 = () => {
                         <NavDropdown.Item href="#">Pendientes</NavDropdown.Item>
                       </div>
                       <NavDropdown.Divider />
-                      <NavDropdown.Item href="#">Rechazados</NavDropdown.Item>
+                      <div className='tw-w-full' onClick={()=>{innerNavigate('/main/pedido/rechazado')}}>
+                        <NavDropdown.Item href="#">Rechazados</NavDropdown.Item>
+                      </div>
                   </NavDropdown>
               </NavDropdown>
               <hr></hr>

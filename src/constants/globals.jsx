@@ -8,7 +8,7 @@
 // const Url_Reproceso = 'http://192.168.1.198:8000' || 'http://192.168.5.21:8090'; //LOCAL
 // const mainURL = undefined || 'http://192.168.5.21:8090'; //PRODUCCION
 const mainURL = undefined || 'http://192.168.1.166:8000'; //DESARROLLO
-
+// const mainURL = undefined || 'http://192.168.1.198:8001'; //DESARROLLO
 // const themeDefault = 'dark'
 // const namesOfModes = ['dark', 'moonlight', 'eclipse', 'light']
 

@@ -1,18 +1,19 @@
 import { mainURL } from '../constants/globals';
+import axios from 'axios';
+const instance = axios.create({
+    timeout: 5000
+})
 
 const meServidorBackend = mainURL
 
-const cabecera = {'Content-type': 'application/json; charset=UTF-8'}
-
 export async function Login(pLogin,pPass,pCia)
-{ 
-    const data = ({usuario_login : pLogin, usuario_contraseña : pPass, usuario_empresa : pCia})
-    const requestOptions = {
-        method: 'POST',
-        headers: cabecera,
-        body: JSON.stringify(data)
-    };
-    const respuesta = await fetch(`${meServidorBackend}/login/`,requestOptions)
-    const responseJson = await respuesta.json()
-    return responseJson
+{
+    try{
+        const data = {usuario_login : pLogin, usuario_contraseña : pPass, usuario_empresa : pCia};
+        const respuesta = await instance.post(`${meServidorBackend}/login/`,data);
+        return respuesta.data;
+    }catch(error){
+        console.error('Error fetching data: ', error);
+        return undefined;
+    }
 }

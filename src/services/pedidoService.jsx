@@ -4,10 +4,10 @@ import { mainURL } from "../constants/globals";
 const rutas_reportes = {
     pendiente: '/listarpedidopendiente',
     aprobado: '/listarpedidoaprobado',
-    rechazado: '/listarrechazado'
+    rechazado: '/listarpedidorechazado'
 }
 
-export async function getPedido(innerParams, state) {
+async function getPedido(innerParams, state) {
     try{
         if(state in rutas_reportes){
             const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_reportes[state]}`, {
@@ -24,8 +24,26 @@ export async function getPedido(innerParams, state) {
         }
 
     }catch(error){
-        console.log(`An Error ocurred: (PedidoService) _ ${error}`);
-        // alert(`An Error ocurred: (PedidoService) _ ${error}`)
-        return [];
+        console.log(`An Error ocurred: (getPedido) _ ${error}`);
+        undefined;
     }
 }
+
+async function getDetallePedidoCabecera(innerParams) {
+    try{
+        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadocabecera`, {
+            params: innerParams
+        });
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoCabecera) _ ${error}`);
+        undefined;
+    }
+}
+
+export {getPedido, getDetallePedidoCabecera}

@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import { useContext, useState } from "react";
+import { commercialContext } from "../../context/ComercialContext";
 import { MySelector } from "../../componentes/Selector";
 import { Form, Button, Alert, Dropdown } from "react-bootstrap";
 import { Login } from "../../services/login";
 import { delay } from "../../utils/delay";
-import Logo from "./assets/distrimax.png";
-import 'C:/AppMobile/src/style/login.css'
 import { useNavigate } from "react-router-dom";
+import { decodeJWT } from "../../utils/decode";
+import meLogo from './assets/cantol_black.png';
+import 'C:/AppMobile/src/style/login.css'
 
 const LoginForm = () => {
   const [inputUsername, setInputUsername] = useState("");
@@ -14,6 +16,7 @@ const LoginForm = () => {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { handleLogo, handleUser } = useContext(commercialContext);
 
   //inicia proceso de autenticacion
   const handleSubmit = async (event) => {
@@ -22,15 +25,20 @@ const LoginForm = () => {
     const responseJson = await Login(inputUsername, inputPassword, inputCompany);
     await delay(200);
     setLoading(false);
-    if (!responseJson.detail) {
-      sessionStorage.setItem("CDTToken", responseJson);
-      setShow(false);
-      navigate('/main')
-    } else {            
-      setShow(true);
+    if (responseJson !== undefined){
+      if (!responseJson.detail) {
+        sessionStorage.setItem("CDTToken", responseJson);
+        const {username} = await decodeJWT();
+        handleUser(username)
+        handleLogo(inputCompany)
+        setShow(false);
+        navigate('/main')
+      } else {            
+        setShow(true);
+      }
     }
   };
-  
+
   const handlePassword = () => {alert("Contactar con TI Cantol")};
 
   return (
@@ -43,17 +51,16 @@ const LoginForm = () => {
       <Form className="shadow p-4 bg-white rounded" onSubmit={handleSubmit}>
         {/* Header */}
         {/* Comienza logo */}
-        <div style={{width: "200px", margin: "0 auto"}}>
+        <div className="tw-bg-yellow-300 tw-mx-auto tw-w-[200px] tw-h-fit tw-rounded-xl">
             <img
-            className="img-thumbnail mx-auto d-block mb-2"
-            style={{minWidth: "100%"}}
-            src={Logo}
+            className="tw-w-fit tw-h-fit"
+            src={meLogo}
             alt="logo"
             />
         </div>
         {/* Termina logo */}
 
-        <div className="h4 mb-2 text-center">Ventas Mobile</div>
+        <div className="h4 my-3 text-center">Sistema App Cantol</div>
         {/* Empieza aviso contraseña o clave incorrecta */}
         {show ? (
           <Alert
@@ -96,17 +103,17 @@ const LoginForm = () => {
           />
         </Form.Group>
         {!loading ? (
-          <Button className="w-100 tw-mt-3" variant="primary" type="submit">
-            Ingresar
+          <Button className="w-100 tw-mt-3" variant="dark" type="submit">
+            <span className="tw-text-sm">INGRESAR</span>
           </Button>
         ) : (
-          <Button className="w-100 tw-mt-3" variant="primary" type="submit" disabled>
-            Ingresando...
+          <Button className="w-100 tw-mt-3" variant="dark" type="submit" disabled>
+            <span className="tw-text-sm">INGRESANDO....</span>
           </Button>
         )}
         <div className="d-grid justify-content-end">
           <Button
-            className="text-muted px-0"
+            className="text-muted px-0 tw-mt-2"
             variant="link"
             onClick={handlePassword}
           >
