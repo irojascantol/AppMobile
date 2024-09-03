@@ -20,6 +20,8 @@ function ComercialContext({children}) {
     const [userName,  setUserName] = useState("")
     const [showSecurity, setShowSecurity] = useState(false);
     const [indexPedidoCarusel, setIndexPedidoCarusel] = useState(0);
+    const [tabActivePedido,  setTabActivePedido] = useState('general');
+
     
     //handlers
     const handleShow = () => setShowSecurity(true);
@@ -27,6 +29,7 @@ function ComercialContext({children}) {
     const handleLogo = (logo_) => setLogo_C(logos[logo_]);
     const handleUser = (name) => setUserName(name);
     const handlePedidoCarusel = (index) => setIndexPedidoCarusel(index)
+    const handleTabPedido = (tabPedido) => setTabActivePedido(tabPedido)
   
   return (
     <commercialContext.Provider value={
@@ -37,13 +40,15 @@ function ComercialContext({children}) {
         userName,
         logo_c,
         indexPedidoCarusel,
+        tabActivePedido,
         setLoading,
         showSecurity,
         handleShow,
         handleClose,
         handleLogo,
         handleUser,
-        handlePedidoCarusel
+        handlePedidoCarusel,
+        handleTabPedido
       }
     }>
         {children}

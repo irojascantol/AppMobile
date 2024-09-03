@@ -33,7 +33,7 @@ const NavBar1 = () => {
     <div>
       <Navbar expanded={expanded} expand="xl" color='dark' className="bg-body-tertiary border border-indigo-600">
         <Container>
-          <Navbar.Brand href="/comercial/main" className='tw-h-12'>
+          <Navbar.Brand href="#" className='tw-h-12'>
             <div className='tw-h-full tw-flex tw-gap-2 tw-justify-center tw-items-center'>
               <div className='tw-block tw-h-full'>
                 <i className="tw-ml-2 tw-h-fit"><BsFillPersonFill size={26} color='gray'/></i>

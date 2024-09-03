@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react'
 import { useParams } from 'react-router-dom'
-import { getPedido, getDetallePedidoCabecera } from '../../services/pedidoService'
+import { getPedido } from '../../services/pedidoService';
 import { MyListGroup } from './componentes/MyListGroup';
 import { commercialContext } from '../../context/ComercialContext';
 import { decodeJWT } from '../../utils/decode';
@@ -17,7 +17,8 @@ export default function ReportePedido() {
     const {
         setLoading,
         handleShow,
-        handlePedidoCarusel
+        handlePedidoCarusel,
+        handleTabPedido,
     } = useContext(commercialContext);
 
     useEffect(()=>{
@@ -37,7 +38,9 @@ export default function ReportePedido() {
     }, [params]);
 
     const handleCarusel = (item) => {
+        console.log(item)
         setItemSelected(item);
+        handleTabPedido('general')
         handlePedidoCarusel(1);
     }
 
@@ -54,4 +57,3 @@ export default function ReportePedido() {
         </div>
     )
 }
-// const response = await getDetallePedidoCabecera({numero_documento: item.DocNum});

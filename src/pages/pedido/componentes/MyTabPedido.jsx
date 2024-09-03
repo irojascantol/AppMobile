@@ -1,10 +1,16 @@
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import { commercialContext } from '../../../context/ComercialContext';
+import { useContext } from 'react';
 
 export default function MyTabPedido({components = []}) {
+  const {tabActivePedido, handleTabPedido} = useContext(commercialContext);
+
   return (
     <Tabs
-    defaultActiveKey="general"
+    defaultActiveKey={tabActivePedido}
+    activeKey={tabActivePedido}
+    onSelect={(tab)=>handleTabPedido(tab)}
     id="uncontrolled-tab-example"
     className="mb-3"
   >
@@ -17,7 +23,7 @@ export default function MyTabPedido({components = []}) {
         <Tab eventKey="logistica" title="Logistica">
             {components[2]}
         </Tab>
-        <Tab eventKey="finanza" title="Finanzas">
+        <Tab eventKey="finanzas" title="Finanzas">
             {components[3]}
         </Tab>
     </Tabs>

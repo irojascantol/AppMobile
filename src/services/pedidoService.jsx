@@ -29,9 +29,9 @@ async function getPedido(innerParams, state) {
     }
 }
 
-async function getDetallePedidoCabecera(innerParams) {
+async function getDetallePedidoGeneral(innerParams) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadocabecera`, {
+        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadogeneral`, {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -41,9 +41,60 @@ async function getDetallePedidoCabecera(innerParams) {
             return [];
         }
     }catch(error){
-        console.log(`An Error ocurred: (getDetallePedidoCabecera) _ ${error}`);
+        console.log(`An Error ocurred: (getDetallePedidoGeneral) _ ${error}`);
         undefined;
     }
 }
 
-export {getPedido, getDetallePedidoCabecera}
+async function getDetallePedidoLogistica(innerParams) {
+    try{
+        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadologistica`, {
+            params: innerParams
+        });
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        undefined;
+    }
+}
+
+async function getDetallePedidoFinanzas(innerParams) {
+    try{
+        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadofinanzas`, {
+            params: innerParams
+        });
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        undefined;
+    }
+}
+
+async function getDetallePedidoContenido(innerParams) {
+    try{
+        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadocontenido`, {
+            params: innerParams
+        });
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        undefined;
+    }
+}
+
+export {getPedido, getDetallePedidoGeneral, getDetallePedidoLogistica, getDetallePedidoFinanzas, getDetallePedidoContenido}

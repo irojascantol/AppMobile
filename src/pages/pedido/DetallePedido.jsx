@@ -1,15 +1,21 @@
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 import { commercialContext } from '../../context/ComercialContext'
 import MyTabPedido from './componentes/MyTabPedido'
 import { MyListGroup } from './componentes/MyListGroup'
+import Button from 'react-bootstrap/Button';
 
 export default function DetallePedido({itemSelected = {}}) {
     const {handlePedidoCarusel} = useContext(commercialContext)
-    console.log(itemSelected)
     return (
         <>
-        <MyTabPedido components={[<MyListGroup data={itemSelected} plantilla='general'/>, <div></div>, <div></div>, <div></div>]}/>
-        <button className='tw-mt-56 tw-ml-56' onClick={()=>{console.log("si da click aqui");handlePedidoCarusel(0)}}>regresar</button>
+            <MyTabPedido components={[
+            <MyListGroup data={itemSelected} plantilla='general'/>,
+            <MyListGroup data={itemSelected} plantilla='contenido'/>,
+            <MyListGroup data={itemSelected} plantilla='logistica'/>,
+            <MyListGroup data={itemSelected} plantilla='finanzas'/>]}/>
+            <div className='tw-w-screen tw-flex tw-justify-end tw-my-7 tw-pr-4'>
+                <Button variant="secondary" onClick={()=>{console.log("moviendo carrusel");handlePedidoCarusel(0)}}>Retornar</Button>
+            </div>
         </>
     )
 }
