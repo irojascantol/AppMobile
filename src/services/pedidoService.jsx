@@ -7,6 +7,30 @@ const rutas_reportes = {
     rechazado: '/listarpedidorechazado'
 }
 
+const rutas_general = {
+    pendiente: '/listarpendientegeneral',
+    aprobado: '/listaraprobadogeneral',
+    rechazado: '/listarrechazadogeneral'
+}
+
+const rutas_contenido = {
+    pendiente: '/listarpendientecontenido',
+    aprobado: '/listaraprobadocontenido',
+    rechazado: '/listarrechazadocontenido',
+}
+
+const rutas_logistica = {
+    pendiente: '/listarpendientelogistica',
+    aprobado: '/listaraprobadologistica',
+    rechazado: '/listarrechazadologistica',
+}
+
+const rutas_finanzas = {
+    pendiente: '/listarpendientefinanzas',
+    aprobado: '/listaraprobadofinanzas',
+    rechazado: '/listarrechazadofinanzas',
+}
+
 async function getPedido(innerParams, state) {
     try{
         if(state in rutas_reportes){
@@ -29,9 +53,9 @@ async function getPedido(innerParams, state) {
     }
 }
 
-async function getDetallePedidoGeneral(innerParams) {
+async function getDetallePedidoGeneral(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadogeneral`, {
+        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_general[tipoPedido]}`, {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -46,9 +70,9 @@ async function getDetallePedidoGeneral(innerParams) {
     }
 }
 
-async function getDetallePedidoLogistica(innerParams) {
+async function getDetallePedidoLogistica(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadologistica`, {
+        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_logistica[tipoPedido]}`, {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -63,9 +87,9 @@ async function getDetallePedidoLogistica(innerParams) {
     }
 }
 
-async function getDetallePedidoFinanzas(innerParams) {
+async function getDetallePedidoFinanzas(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadofinanzas`, {
+        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_finanzas[tipoPedido]}`, {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -80,9 +104,9 @@ async function getDetallePedidoFinanzas(innerParams) {
     }
 }
 
-async function getDetallePedidoContenido(innerParams) {
+async function getDetallePedidoContenido(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido/listarrechazadocontenido`, {
+        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_contenido[tipoPedido]}`, {
             params: innerParams
         });
         if (!!response.data && response.status === 200){

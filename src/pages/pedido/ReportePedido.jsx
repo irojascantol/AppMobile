@@ -38,7 +38,6 @@ export default function ReportePedido() {
     }, [params]);
 
     const handleCarusel = (item) => {
-        console.log(item)
         setItemSelected(item);
         handleTabPedido('general')
         handlePedidoCarusel(1);
@@ -51,7 +50,7 @@ export default function ReportePedido() {
                     <MyListGroup data={listReporte} plantilla={params.reporte} handleCarusel={handleCarusel}/>
                 </Carousel.Item>
                 <Carousel.Item>
-                    <DetallePedido itemSelected={itemSelected}/>
+                    <DetallePedido itemSelected={itemSelected} tipoPedido={params?.reporte}/>
                 </Carousel.Item>
             </PedidoCarusel>
         </div>

@@ -10,7 +10,7 @@ function Pendiente({item}) {
     className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
     >
       <div className="ms-2 me-auto">
-        <div className="fw-bold">{item.CardName}</div>
+        <div className="tw-font-semibold">{item.CardName}</div>
         <div className='text-secondary tw-text-md'>RUC: {item.LicTradNum}</div>
       </div>
       <div className='tw-h-12 tw-flex tw-flex-col tw-justify-between'>
@@ -30,7 +30,7 @@ function Aprobado({item}) {
     className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
     >
       <div className="ms-2 me-auto">
-        <div className="fw-bold">{item.CardName}</div>
+        <div className="tw-font-semibold">{item.CardName}</div>
         <div className='text-secondary tw-text-md'>RUC: {item.LicTradNum}</div>
       </div>
       <div className='tw-h-12 tw-flex tw-flex-col tw-justify-between'>
@@ -50,7 +50,7 @@ function Rechazado({item}) {
     className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
     >
       <div className="ms-2 me-auto">
-        <div className="fw-bold">{item.CardName}</div>
+        <div className="tw-font-semibold">{item.CardName}</div>
         <div className='text-secondary tw-text-md'>RUC: {item.LicTradNum}</div>
       </div>
       <div className='tw-h-12 tw-flex tw-flex-col tw-justify-between'>

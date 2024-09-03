@@ -22,6 +22,7 @@ const NavBar1 = () => {
     const {
       loading,
       userName,
+      handlePedidoCarusel,
     } = useContext(commercialContext)
 
     const innerNavigate = (path) => {
@@ -69,15 +70,15 @@ const NavBar1 = () => {
                     </div>
                   </NavItem>
                   <NavDropdown title="Estados" id="basic-nav-dropdown" className='nav-dropdown-custom-height'>
-                      <div className='tw-w-full' onClick={()=>{innerNavigate('/main/pedido/aprobado')}}>
+                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); innerNavigate('/main/pedido/aprobado')}}>
                         <NavDropdown.Item href="#">Aprobados</NavDropdown.Item>
                       </div>
                       <NavDropdown.Divider />
-                      <div className='tw-w-full' onClick={()=>{innerNavigate('/main/pedido/pendiente')}}>
+                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); innerNavigate('/main/pedido/pendiente')}}>
                         <NavDropdown.Item href="#">Pendientes</NavDropdown.Item>
                       </div>
                       <NavDropdown.Divider />
-                      <div className='tw-w-full' onClick={()=>{innerNavigate('/main/pedido/rechazado')}}>
+                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); innerNavigate('/main/pedido/rechazado')}}>
                         <NavDropdown.Item href="#">Rechazados</NavDropdown.Item>
                       </div>
                   </NavDropdown>

@@ -7,13 +7,13 @@ const plantillas = {
   pendiente: (item)=><Pendiente item={item}/>,
   aprobado:  (item)=><Aprobado item={item}/>,
   rechazado:  (item)=><Rechazado item={item}/>,
-  general: (data)=><DetallePlantillaGeneral data={data}/>,
-  logistica: (data)=><DetallePlantillaLogistica data={data}/>,
-  finanzas: (data)=><DetallePlantillaFinanzas data={data}/>,
-  contenido: (data)=><DetallePlantillaContenido data={data}/>
+  general: (data, tipoPedido)=><DetallePlantillaGeneral data={data} tipoPedido={tipoPedido}/>,
+  logistica: (data, tipoPedido)=><DetallePlantillaLogistica data={data} tipoPedido={tipoPedido}/>,
+  finanzas: (data, tipoPedido)=><DetallePlantillaFinanzas data={data} tipoPedido={tipoPedido}/>,
+  contenido: (data, tipoPedido)=><DetallePlantillaContenido data={data} tipoPedido={tipoPedido}/>
 }
 
-function MyListGroup({data, plantilla, handleCarusel}) {
+function MyListGroup({data, plantilla, handleCarusel, tipoPedido}) {
   if(['pendiente', 'aprobado', 'rechazado'].includes(plantilla)){
     return (
       <ListGroup as="ol">
@@ -27,7 +27,7 @@ function MyListGroup({data, plantilla, handleCarusel}) {
   }else{
     return(
       <ListGroup as="ol">
-        {plantillas[plantilla](data)}
+        {plantillas[plantilla](data, tipoPedido)}
       </ListGroup>
     )
   }

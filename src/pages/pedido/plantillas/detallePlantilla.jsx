@@ -5,15 +5,19 @@ import { commercialContext } from '../../../context/ComercialContext';
 import { getHumanDateFormat } from '../../../utils/humandateformat';
 import { Contenido_Articulos } from './pedidoPlantilla';
 
-function DetallePlantillaContenido({data}) {
+const params_ = {
+  rechazado: (data)=>({numero_documento: data?.DocNum}),
+  pendiente: (data)=>({documento_entrada: data?.DocEntry})
+}
+
+function DetallePlantillaContenido({data, tipoPedido}) {
   const [componentData, setComponentData] = useState(null);
   const {tabActivePedido, indexPedidoCarusel} = useContext(commercialContext)
-  
 
   useEffect(()=>{
     const getDetalleGeneral = async () => {
       if(tabActivePedido==='contenido'){
-        const response = await getDetallePedidoContenido({documento_entrada: data.DocEntry});
+        const response = await getDetallePedidoContenido({documento_entrada: data?.DocEntry}, tipoPedido);
         setComponentData(response)
       }
     }
@@ -30,7 +34,7 @@ function DetallePlantillaContenido({data}) {
   )
 }
 
-function DetallePlantillaFinanzas({data}) {
+function DetallePlantillaFinanzas({data, tipoPedido}) {
   const [componentData, setComponentData] = useState(null);
   const {tabActivePedido, indexPedidoCarusel} = useContext(commercialContext)
   
@@ -38,7 +42,7 @@ function DetallePlantillaFinanzas({data}) {
   useEffect(()=>{
     const getDetalleGeneral = async () => {
       if(tabActivePedido==='finanzas'){
-        const response = await getDetallePedidoFinanzas({numero_documento: data.DocNum, card_code: data.CardCode});
+        const response = await getDetallePedidoFinanzas({...params_[tipoPedido](data), card_code: data.CardCode}, tipoPedido);
         setComponentData(response[0])
       }
     }
@@ -72,7 +76,7 @@ function DetallePlantillaFinanzas({data}) {
   )
 }
 
-function DetallePlantillaLogistica({data}) {
+function DetallePlantillaLogistica({data, tipoPedido}) {
   const [componentData, setComponentData] = useState(null);
   const {tabActivePedido, indexPedidoCarusel} = useContext(commercialContext)
   
@@ -80,7 +84,7 @@ function DetallePlantillaLogistica({data}) {
   useEffect(()=>{
     const getDetalleGeneral = async () => {
       if(tabActivePedido==='logistica'){
-        const response = await getDetallePedidoLogistica({numero_documento: data.DocNum});
+        const response = await getDetallePedidoLogistica(params_[tipoPedido](data), tipoPedido);
         setComponentData(response[0])
       }
     }
@@ -93,16 +97,6 @@ function DetallePlantillaLogistica({data}) {
       <ListGroup.Item
         as="li"
         className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
-        variant="no style"
-      >
-        <div className="ms-2 me-auto tw-border-4 tw-border-indigo-600">
-          <div className="tw-font-semibold text-primary">Dirección de entrega</div>
-          <div className='text-secondary tw-text-base'>{componentData?.direccion_entrega || 'NO PRECISA'}</div>
-        </div>
-      </ListGroup.Item>
-      <ListGroup.Item
-        as="li"
-        className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
         variant='No style'
       >
         <div className="ms-2 me-auto tw-border-4 tw-border-indigo-600">
@@ -110,24 +104,33 @@ function DetallePlantillaLogistica({data}) {
           <div className='text-secondary tw-text-base'>{componentData?.direccion_fiscal || 'NO PRECISA'}</div>
         </div>
       </ListGroup.Item>
+      <ListGroup.Item
+        as="li"
+        className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
+        variant="no style"
+      >
+        <div className="ms-2 me-auto tw-border-4 tw-border-indigo-600">
+          <div className="tw-font-semibold text-primary">Dirección de entrega</div>
+          <div className='text-secondary tw-text-base'>{componentData?.direccion_entrega || 'NO PRECISA'}</div>
+        </div>
+      </ListGroup.Item>
     </>
   )
 }
 
-function DetallePlantillaGeneral({data}) {
+function DetallePlantillaGeneral({data, tipoPedido}) {
   const [componentData, setComponentData] = useState(null);
   const {indexPedidoCarusel, tabActivePedido} = useContext(commercialContext)
 
   useEffect(()=>{
     const getDetalleGeneral = async () => {
       if(tabActivePedido==='general'){
-        const response = await getDetallePedidoGeneral({numero_documento: data?.DocNum});
+        const response = await getDetallePedidoGeneral(params_[tipoPedido](data), tipoPedido);
         setComponentData(response[0])
       }
     }
     getDetalleGeneral();
    },[indexPedidoCarusel, tabActivePedido]);
-
 
   return (
     <>
@@ -217,8 +220,8 @@ function DetallePlantillaGeneral({data}) {
         variant='No style'
       >
         <div className="ms-2 me-auto tw-border-4 tw-border-indigo-600">
-          <div className="tw-font-semibold text-primary">Moneda:</div>
-          <div className='text-secondary tw-text-lg'>{componentData?.tipo_moneda}</div>
+          <div className="tw-font-semibold text-primary">Hora de creación:</div>
+          <div className='text-secondary tw-text-lg'>{componentData?.hora_creacion}</div>
         </div>
       </ListGroup.Item>
       <ListGroup.Item
@@ -227,8 +230,8 @@ function DetallePlantillaGeneral({data}) {
         variant='No style'
       >
         <div className="ms-2 me-auto tw-border-4 tw-border-indigo-600">
-          <div className="tw-font-semibold text-primary">Hora de creación:</div>
-          <div className='text-secondary tw-text-lg'>{componentData?.hora_creacion}</div>
+          <div className="tw-font-semibold text-primary">Moneda:</div>
+          <div className='text-secondary tw-text-lg'>{componentData?.tipo_moneda}</div>
         </div>
       </ListGroup.Item>
       <ListGroup.Item
