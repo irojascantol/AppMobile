@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { decodeJWT } from "../../utils/decode";
 import meLogo from './assets/cantol_black.png';
 import 'C:/AppMobile/src/style/login.css'
+import { reverseString } from "../../utils/string";
 
 const LoginForm = () => {
   const [inputUsername, setInputUsername] = useState("");
@@ -29,6 +30,7 @@ const LoginForm = () => {
       if (!responseJson.detail) {
         sessionStorage.setItem("CDTToken", responseJson);
         const {username} = await decodeJWT();
+        sessionStorage.setItem("USR", reverseString(username));
         handleUser(username)
         handleLogo(inputCompany)
         setShow(false);

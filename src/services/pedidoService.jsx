@@ -7,29 +7,7 @@ const rutas_reportes = {
     rechazado: '/listarpedidorechazado'
 }
 
-const rutas_general = {
-    pendiente: '/listarpendientegeneral',
-    aprobado: '/listaraprobadogeneral',
-    rechazado: '/listarrechazadogeneral'
-}
-
-const rutas_contenido = {
-    pendiente: '/listarpendientecontenido',
-    aprobado: '/listaraprobadocontenido',
-    rechazado: '/listarrechazadocontenido',
-}
-
-const rutas_logistica = {
-    pendiente: '/listarpendientelogistica',
-    aprobado: '/listaraprobadologistica',
-    rechazado: '/listarrechazadologistica',
-}
-
-const rutas_finanzas = {
-    pendiente: '/listarpendientefinanzas',
-    aprobado: '/listaraprobadofinanzas',
-    rechazado: '/listarrechazadofinanzas',
-}
+const rutas = (tipoPedido, tab) => (`${mainURL}/comercial/ventas/pedido/listar${tipoPedido}${tab}`)
 
 async function getPedido(innerParams, state) {
     try{
@@ -55,7 +33,7 @@ async function getPedido(innerParams, state) {
 
 async function getDetallePedidoGeneral(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_general[tipoPedido]}`, {
+        const response = await axios(rutas(tipoPedido,'general'), {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -72,7 +50,7 @@ async function getDetallePedidoGeneral(innerParams, tipoPedido) {
 
 async function getDetallePedidoLogistica(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_logistica[tipoPedido]}`, {
+        const response = await axios(rutas(tipoPedido,'logistica'), {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -89,7 +67,7 @@ async function getDetallePedidoLogistica(innerParams, tipoPedido) {
 
 async function getDetallePedidoFinanzas(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_finanzas[tipoPedido]}`, {
+        const response = await axios(rutas(tipoPedido,'finanzas'), {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -106,7 +84,7 @@ async function getDetallePedidoFinanzas(innerParams, tipoPedido) {
 
 async function getDetallePedidoContenido(innerParams, tipoPedido) {
     try{
-        const response = await axios(`${mainURL}/comercial/ventas/pedido${rutas_contenido[tipoPedido]}`, {
+        const response = await axios(rutas(tipoPedido,'contenido'), {
             params: innerParams
         });
         if (!!response.data && response.status === 200){
@@ -121,4 +99,52 @@ async function getDetallePedidoContenido(innerParams, tipoPedido) {
     }
 }
 
-export {getPedido, getDetallePedidoGeneral, getDetallePedidoLogistica, getDetallePedidoFinanzas, getDetallePedidoContenido}
+async function getNuevoPedidoClave(innerParams) {
+    try{
+        const response = await axios.post(`${mainURL}/comercial/ventas/pedido/generarcodigoventa`, innerParams);
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        undefined;
+    }
+}
+
+async function getProductosBonificacion(innerParams) {
+    try{
+        const response = await axios.post(`${mainURL}/comercial/ventas/pedido/aplicarbonificacionproducto`, innerParams);
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        undefined;
+    }
+}
+
+async function getCreditoAnticipo(innerParams) {
+    try{
+        const response = await axios.get(`${mainURL}/comercial/ventas/pedido/obtenercredito_anticipo_favor`, {
+            params: innerParams
+        });
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        undefined;
+    }
+}
+
+
+export {getPedido, getDetallePedidoGeneral, getDetallePedidoLogistica, getDetallePedidoFinanzas, getDetallePedidoContenido, getNuevoPedidoClave, getProductosBonificacion, getCreditoAnticipo}

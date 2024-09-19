@@ -12,8 +12,6 @@ export default function ReportePedido() {
     const params = useParams();
     const [listReporte, setListReporte] = useState([]);
     const [itemSelected,  setItemSelected] = useState(null);
-
-
     const {
         setLoading,
         handleShow,

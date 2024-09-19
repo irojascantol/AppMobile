@@ -1,0 +1,18 @@
+
+
+.accordion{
+    padding-top: 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    background-color: whitesmoke;
+}
+
+.accordion-body{
+    padding: 0px 0px !important;
+}
+
+.accordion-button{
+    border-radius: 10px !important;
+    border: solid gray !important;
+}

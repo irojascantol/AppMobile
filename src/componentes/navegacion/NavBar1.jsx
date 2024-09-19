@@ -85,7 +85,7 @@ const NavBar1 = () => {
               </NavDropdown>
               <hr></hr>
               <NavItem className='nav-item-custom-height'>
-                  <div onClick={()=>{sessionStorage.removeItem("CDTToken")}}>
+                  <div onClick={()=>{sessionStorage.removeItem("CDTToken"); sessionStorage.removeItem("USR");}}>
                     <NavLink href="/comercial">Salir</NavLink>
                   </div>
               </NavItem>

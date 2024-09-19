@@ -7,7 +7,8 @@ import { Contenido_Articulos } from './pedidoPlantilla';
 
 const params_ = {
   rechazado: (data)=>({numero_documento: data?.DocNum}),
-  pendiente: (data)=>({documento_entrada: data?.DocEntry})
+  pendiente: (data)=>({documento_entrada: data?.DocEntry}),
+  aprobado: (data)=>({numero_documento: data?.DocNum}),
 }
 
 function DetallePlantillaContenido({data, tipoPedido}) {
@@ -38,7 +39,6 @@ function DetallePlantillaFinanzas({data, tipoPedido}) {
   const [componentData, setComponentData] = useState(null);
   const {tabActivePedido, indexPedidoCarusel} = useContext(commercialContext)
   
-
   useEffect(()=>{
     const getDetalleGeneral = async () => {
       if(tabActivePedido==='finanzas'){
@@ -121,7 +121,6 @@ function DetallePlantillaLogistica({data, tipoPedido}) {
 function DetallePlantillaGeneral({data, tipoPedido}) {
   const [componentData, setComponentData] = useState(null);
   const {indexPedidoCarusel, tabActivePedido} = useContext(commercialContext)
-
   useEffect(()=>{
     const getDetalleGeneral = async () => {
       if(tabActivePedido==='general'){
