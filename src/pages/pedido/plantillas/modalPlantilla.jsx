@@ -8,7 +8,7 @@ import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import { useDebounce } from 'use-debounce';
-import { getClientePorFiltro, getProductoPorFiltro } from '../../../services/clienteService';
+import { getClientePorFiltro, getProductoPorFiltro, getTransportistaPorFiltro } from '../../../services/clienteService';
 import { decodeJWT } from '../../../utils/decode';
 import { BsSearch } from 'react-icons/bs';
 import { upSelectedOption } from '../../../utils/array';
@@ -19,7 +19,8 @@ import { useAsyncError } from 'react-router-dom';
 
 const fetchFunctions = {
     Cliente: (body)=>getClientePorFiltro(body),
-    Producto: (body)=>getProductoPorFiltro(body)
+    Producto: (body)=>getProductoPorFiltro(body),
+    Transportista: (body)=>getTransportistaPorFiltro(body)
 }
 
 const body = {
@@ -32,6 +33,10 @@ const body = {
                     <div className='text-secondary tw-font-medium tw-text-sm'>Precio: <span className='text-dark'>{item?.unidad_moneda} {item.precio}</span></div>
                     <div className='text-secondary tw-font-medium tw-text-sm'>Stock: <span className='text-dark'>{item.stock}</span></div>
                 </div>
+                </>),
+    Transportista:  (item)=>(<>
+                <div className="tw-font-medium tw-text-md">{item?.nombre_transporte}</div>
+                <div className='text-secondary tw-text-sm'>{item?.ruc_transportista}</div>
                 </>),
 }
 
@@ -46,12 +51,21 @@ const fillData = {
         moneda: item.tipo_moneda,
         direccionentrega: item.direccion_entrega,
         grupo_familia: item.grupo_familia,
-        montos: {...nuevoPedido.montos, anticipo: 0, nota_credito: 0}
+        montos: {...nuevoPedido.montos, total_cred_anti: nuevoPedido.montos.total, anticipo: 0, nota_credito: 0},
+        canal_familia: {codigo_canal: item?.codigo_canal_cliente, nombre_canal: item?.canal_cliente},
+        ubicacion: item?.ubicacion_cliente,
     }),
     Producto: (item, products, nuevoPedido)=>{
         return {products: [...products, item]}
     },
-}
+    Transportista: (item)=>({
+        ructransporte: {
+            codigo_transporte: item?.codigo_trasnportista,
+            nombre_transporte: item?.nombre_transporte,
+            documento_transporte: item?.ruc_transportista,
+            }
+        })
+    }
 
 
 function CustomToggle({ children, eventKey, isCollapse, setIsCollapse, prevState}) {
@@ -127,7 +141,7 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
     //aqui se define la cantidad del producto seleccionado
     useEffect(()=>{
         if (Number(showInputTextModal.returnedValue) > 0){
-            handleNewSaleOrder(fillData[buscarModalValues?.operacion]({...currentItem, cantidad: Number(showInputTextModal.returnedValue), descuento: 0}, buscarModalValues?.options[0]?.products))
+            handleNewSaleOrder(fillData[buscarModalValues?.operacion]({...currentItem, cantidad: Number(showInputTextModal.returnedValue), descuento: 0, dsct_porcentaje: 0}, buscarModalValues?.options[0]?.products))
             handleInputTextModal({returnedValue: null}) //deja en null returnedValue para en el primer render no se active estas condicionales
             handleCloseModal();
         }else if(showInputTextModal.returnedValue !== null && Number(showInputTextModal.returnedValue) === 0){
@@ -135,9 +149,7 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
         }
     },[showInputTextModal.returnedValue])
     
-    const agregarProducto = (item) => {
-        console.log(item)
-
+    const agregarItem = (item) => {
         //revisar si el producto ya esta agregado
         if(buscarModalValues?.operacion === 'Producto') {
             let tmpList = buscarModalValues.options[0]?.products;
@@ -149,7 +161,11 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
 
         }else{alert("El producto ya se encuentra agregado");}
         }else if(buscarModalValues?.operacion === 'Cliente'){
+            console.log(item)
             handleNewSaleOrder(fillData[buscarModalValues?.operacion](item, nuevoPedido));
+            handleCloseModal();
+        }else if(buscarModalValues?.operacion === 'Transportista'){
+            handleNewSaleOrder(fillData[buscarModalValues?.operacion](item));
             handleCloseModal();
         }
     }
@@ -178,7 +194,7 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
                         {dataSearch.map((item, index)=>(
                             <ListGroup.Item key={(index+3).toString()} className='active:tw-border-yellow-400 active:tw-border-2'>
                                 <div className="ms-0 me-auto" onClick={()=>{
-                                    agregarProducto(item);
+                                    agregarItem(item);
                                     }}>
                                     <div>
                                         {body[buscarModalValues?.operacion](item)}
@@ -206,16 +222,16 @@ function IngresarTexto({modalValues, handleInputTextModal, handleNewSaleOrder, t
         }}
       />
         <div className='tw-w-full tw-flex tw-justify-end'>
-            <Button variant="primary" type="button" className='tw-mt-2' onClick={()=>{
-                if(modalValues.operacion !== 'agregarProducto'){
-                    handleNewSaleOrder({ructransporte: value}); 
-                    handleInputTextModal({show: false});
-                }else if(modalValues.operacion === 'agregarProducto'){
-                    handleInputTextModal({show: false, returnedValue: value});
-                }
-                }}>
-                Ingresar
-            </Button>
+            <button className='button-4 tw-w-fit tw-mt-2 tw-text-yellow-400 bg-dark' onClick={()=>{
+                    if(modalValues.operacion !== 'agregarProducto'){
+                        handleNewSaleOrder({ructransporte: value}); 
+                        handleInputTextModal({show: false});
+                    }else if(modalValues.operacion === 'agregarProducto'){
+                        handleInputTextModal({show: false, returnedValue: value});
+                    }
+                    }}>
+                    Ingresar
+            </button>
         </div>
     </Form>
     )
@@ -296,4 +312,56 @@ function Anticipo_Credito({nuevopedido, modalValues, handleInputTextModal, handl
     )
 }
 
-export {BuscarModal, IngresarTexto, IngresarFecha, SelectorCombo, Anticipo_Credito}
+
+function Institucional_Campo(params){
+    const [input, setinput] = useState({oc: '', cmp1: '', cmp2: '', cmp3: ''});
+    const handleInput = (obj) => setinput({...input, ...obj})
+
+    const guardarDatosInstitucional = () => {
+        //oc obligatorio
+        if(input.oc){
+            params.handleInputTextModal({show: false, returnedValue: {body: input}})
+        }else{
+            alert("Ingrese orden de compra")
+        }
+    }
+
+    return (
+        <ListGroup as="ol" className='tw-flex tw-gap-2 tw-pb-1'>
+            <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-start tw-flex-row tw-gap-1' variant='secondary'>
+                <div className='myFontFamily tw-font-medium tw-text-left tw-w-[188px]'>Orden de compra:</div>
+                <input type='text' value={input.oc.toUpperCase()} disabled={false} onChange={(event)=>{handleInput({oc: event.target.value})}} className='tw-block tw-bg-white' placeholder='Ingrese OC'/>
+            </ListGroup.Item>
+            <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-start tw-flex-col tw-gap-2' variant='secondary'>
+                <div className='myFontFamily tw-font-medium tw-text-left tw-w-[188px]'>Campo 1:</div>
+                <div className='tw-flex tw-justify-start tw-gap-1 tw-w-full'> 
+                    <input type='text' value={input.cmp1} disabled={false} onChange={(event)=>{handleInput({cmp1 :event.target.value})}} 
+                    className='tw-bg-white tw-w-full' placeholder='Ingrese nombre de proyecto'/>
+                </div>
+            </ListGroup.Item>
+            <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-start tw-flex-col tw-gap-2' variant='secondary'>
+                <div className='myFontFamily tw-font-medium tw-text-left tw-w-[188px]'>Campo 2:</div>
+                <div className='tw-flex tw-justify-start tw-gap-1 tw-w-full'> 
+                    <input type='text' value={input.cmp2} disabled={false} onChange={(event)=>{handleInput({cmp2 :event.target.value})}}
+                    className='tw-bg-white tw-w-full' placeholder='Ingrese dirección de entrega'/>
+                </div>
+            </ListGroup.Item>
+            <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-start tw-flex-col tw-gap-2' variant='secondary'>
+                <div className='myFontFamily tw-font-medium tw-text-left tw-w-[188px]'>Campo 3:</div>
+                <div className='tw-flex tw-justify-start tw-gap-1 tw-w-full'> 
+                    <input type='text' value={input.cmp3} disabled={false} onChange={(event)=>{handleInput({cmp3 :event.target.value})}}
+                    className='tw-bg-white tw-w-full' placeholder='Ingrese contacto'/>
+                </div>
+            </ListGroup.Item>
+            <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-start tw-flex-col tw-gap-2' variant='secondary'>
+            <button className='button-4 tw-w-full' onClick={guardarDatosInstitucional}>
+            {/* <button className='button-4 tw-w-full'> */}
+                {'Guardar'}
+            </button>
+            </ListGroup.Item>
+        </ListGroup>
+    )
+}
+
+//set max length of input text field?
+export {BuscarModal, IngresarTexto, IngresarFecha, SelectorCombo, Anticipo_Credito, Institucional_Campo}

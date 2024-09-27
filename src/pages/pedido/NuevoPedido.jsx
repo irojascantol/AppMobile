@@ -3,17 +3,19 @@ import Accordion from 'react-bootstrap/Accordion';
 import { MyListGroup } from './componentes/MyListGroup';
 import '../../style/accordion.css'
 import PedidoModal from '../../componentes/modal/pedidoModal';
-import { Anticipo_Credito, BuscarModal, IngresarFecha, IngresarTexto, SelectorCombo } from './plantillas/modalPlantilla';
+import { Anticipo_Credito, BuscarModal, IngresarFecha, IngresarTexto, SelectorCombo , Institucional_Campo} from './plantillas/modalPlantilla';
 import { commercialContext } from '../../context/ComercialContext';
 import { getNuevoPedidoClave } from '../../services/pedidoService';
 import { decodeJWT } from '../../utils/decode';
 import { getFormatShipDate} from '../../utils/humandateformat';
+import { getCurrentLocation } from '../../utils/location';
 
 const tipoModal = {
   text: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<IngresarTexto nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'number'}/>),
   combo: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<SelectorCombo nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'text'}/>),
   date: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<IngresarFecha nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'date'}/>),
-  Anticipo_Credito: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Anticipo_Credito nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />)
+  Anticipo_Credito: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Anticipo_Credito nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />),
+  Institucional_Campos: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Institucional_Campo nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />)
 }
 
 export default function NuevoPedido() {
@@ -27,6 +29,8 @@ export default function NuevoPedido() {
           //handle input modals combo/ date/ text field
           showInputTextModal: modalValues,
           handleInputTextModal} = useContext(commercialContext);
+        
+  const [mensaje, setMensaje] = useState('Temporal');
 
   //Trae clave mobile y fecha contable
   useEffect(()=>{
@@ -39,6 +43,16 @@ export default function NuevoPedido() {
       doFetch();
   },[])
 
+  //guardar OV
+  const guardarOV = async () => {
+      let currentLocation = await getCurrentLocation();
+      // setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
+      if ('message' in currentLocation){
+        setMensaje(currentLocation?.message)
+      }else{
+        setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
+      }
+  }
 
   return (
     <>
@@ -69,6 +83,12 @@ export default function NuevoPedido() {
         </Accordion.Body>
       </Accordion.Item>
     </Accordion>
+    <div className='tw-flex'>
+      <button className='button-14 tw-w-2/3 tw-h-10 tw-my-4 tw-font-sans tw-font-medium' disabled={false} style={{margin: '0 auto'}} onClick={guardarOV}>
+        Grabar Orden de Venta
+      </button>
+    </div>
+    <h1>{mensaje}</h1>
     </>
   );
 }

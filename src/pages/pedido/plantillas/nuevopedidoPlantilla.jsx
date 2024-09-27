@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react'
 import Button from 'react-bootstrap/Button';
 import { ListGroup } from 'react-bootstrap'
-import { BsArchive, BsArrowClockwise, BsArrowRightShort, BsBootstrap, BsCalendar3, BsCurrencyExchange, BsFileEarmarkPerson, BsList, BsPlusSquareFill, BsSearch, BsTrash, BsTrash3Fill, BsX } from 'react-icons/bs';
+import { BsArchive, BsArrowClockwise, BsArrowRightShort, BsBootstrap, BsCalendar3, BsCurrencyExchange, BsFileEarmarkPerson, BsFillPeopleFill, BsList, BsPlusSquareFill, BsSearch, BsTrash, BsTrash3Fill, BsX } from 'react-icons/bs';
 import { commercialContext } from '../../../context/ComercialContext';
 import { getFormatShipDate, getFormatShipDate_peru, getHumanDateFormat, getHumanDateFormat_plus } from '../../../utils/humandateformat';
 import { truncate } from '../../../utils/math';
-import { getProductosBonificacion } from '../../../services/pedidoService';
+import { getProductosBonificacion, postaplicarDescuento } from '../../../services/pedidoService';
 import '../../../style/inputform.css'
 
 const retornaDatos = (data, key) => {
@@ -52,7 +52,7 @@ function NuevoPedidoCabecera() {
                 </div>
                 <div className='tw-w-[20px]'>
                     <Button variant="outline-secondary" id="button-addon2" onClick={()=>handleSearchModal({show: true, modalTitle: 'Buscar cliente', operacion: 'Cliente', placeholder: 'Ingrese Razon Social o RUC'})} className='tw-px-3 tw-h-12'>
-                        <BsSearch size={20}/>
+                        <BsSearch className='tw-text-black' size={20}/>
                     </Button>
                 </div>
             </div>
@@ -92,7 +92,7 @@ function NuevoPedidoCabecera() {
                         if(!!nuevoPedido.ruc && !!nuevoPedido.razonsocial){
                             handleInputTextModal({show: true, options: getFormatShipDate({fechacontable: new Date(nuevoPedido?.fcontable), moredays: 1}), modalTitle: 'Ingresar fecha de entrega', tipomodal: 'date', operacion: 'direccionentrega'})
                         }else{alert("Debe seleccionar un cliente")}}} className='tw-px-3 tw-h-12'>
-                        <BsCalendar3 size={20}/>
+                        <BsCalendar3 className='tw-text-black' size={20}/>
                     </Button>
                 </div>
             </div>
@@ -113,8 +113,8 @@ function NuevoPedidoCabecera() {
                             handleInputTextModal({show: true, options: nuevoPedido.direccionentrega, modalTitle: 'Seleccionar dirección de entrega', tipomodal: 'combo', operacion: 'direccionentrega'})
                         }else{alert("Debe seleccionar un cliente")}
                     }}
-                        className='tw-px-3 tw-h-12'>
-                        <BsList size={20}/>
+                    className='tw-px-3 tw-h-12'>
+                        <BsList className='tw-text-black' size={20}/>
                     </Button>
                 </div>
             </div>
@@ -127,11 +127,17 @@ function NuevoPedidoCabecera() {
             <div className="tw-ml-2 tw-mr-5  tw-flex tw-justify-between tw-w-full">
                 <div className='tw-min-w-[330px]'>
                     <div className="header_section_title">RUC transportista:</div>
-                    <div className='header_section_content' dangerouslySetInnerHTML={{__html: `${retornaDatos(nuevoPedido, "ructransporte")}&nbsp;`}}/>
+                    <div className='header_section_content' dangerouslySetInnerHTML={{__html: `${retornaDatos(nuevoPedido, "ructransporte")?.nombre_transporte || '&nbsp'};`}}/>
+                    <div className='tw-text-xs tw-font-semibold' dangerouslySetInnerHTML={{__html: `${retornaDatos(nuevoPedido, "ructransporte")?.documento_transporte || '&nbsp'}&nbsp;`}}/>
                 </div>
                 <div className='tw-w-[20px]'>
-                    <Button variant="outline-secondary" onClick={()=>handleInputTextModal({show: true, modalTitle: 'Ingresar RUC transportista', tipomodal: 'text'})} className='tw-px-3 tw-h-12'>
-                        <BsFileEarmarkPerson  size={20}/>
+                    <Button variant="outline-secondary" id="button-addon2" onClick={()=>{
+                        if(!!nuevoPedido.ruc && !!nuevoPedido.razonsocial){
+                            handleSearchModal({show: true, modalTitle: 'Buscar transportista', operacion: 'Transportista', placeholder: 'Ingrese Razon Social o RUC'})       
+                        }else{alert("Debe seleccionar un cliente")}
+                        }}
+                    className='tw-px-3 tw-h-12'>
+                        <BsSearch className='tw-text-black' size={20}/>
                     </Button>
                 </div>
             </div>
@@ -174,10 +180,34 @@ function NuevoPedidoCabecera() {
                     }else{alert("Debe seleccionar un cliente")}
                     }} 
                     className='tw-px-3 tw-h-12'>
-                    <BsCurrencyExchange  size={20}/>
+                    <BsCurrencyExchange className='tw-text-black' size={20}/>
                 </Button>
             </div>
         </div>
+        </ListGroup.Item>
+        <ListGroup.Item
+            as="li"
+            className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1 tw-relative"
+            variant="no style"
+            >
+        <div className="tw-ml-2 tw-mr-5  tw-flex tw-justify-between tw-w-full">
+            <div className='tw-min-w-[330px]'>
+                <div className="header_section_title">Canal de venta(*):</div>
+                <div className='header_section_content' dangerouslySetInnerHTML={{__html: `${nuevoPedido?.canal_familia?.nombre_canal || '&nbsp;'}&nbsp;`}}/>
+            </div>
+            <div className='tw-w-[20px]'>
+                <Button variant="outline-secondary" onClick={()=>{
+                    if(!!nuevoPedido.ruc && !!nuevoPedido.razonsocial){
+                        handleInputTextModal({show: true, modalTitle: 'Campos obligatorios', tipomodal: 'Institucional_Campos', options: nuevoPedido?.condicionpago, operacion: 'condicionpago'})
+                    }else{alert("Debe seleccionar un cliente")}
+                    }} 
+                    className='tw-px-3 tw-h-12'>
+                    <BsFillPeopleFill  className='tw-text-black' size={20}/>
+                </Button>
+            </div>
+        </div>
+        {/* ventana bloqueo para los que no son institucional */}
+        {!(nuevoPedido?.canal_familia?.codigo_canal === 114) && (<div className='tw-absolute tw-w-full tw-h-full tw-left-0 tw-top-0 tw-bg-gray-500 tw-opacity-40 tw-rounded-sm'/>)}
         </ListGroup.Item>
     </>
   )
@@ -196,6 +226,8 @@ function NuevoPedidoProductos(){
     useEffect(()=>{
         !!largo_productos && calcularTotal()
         !largo_productos && setearCero()
+        //desactiva el boton de eliminar
+        !largo_productos && setDeleteMode(false)
     }, [nuevoPedido.products])
 
     //aplica el descuento por anticipo y nota de credito
@@ -229,7 +261,6 @@ function NuevoPedidoProductos(){
         handleNewSaleOrder({products: ghost_products})
     }
 
-
     const aplicarBonificacion = async() => {
         //se filtra los productos que nos son bonificados
         let request_body = nuevoPedido.products.map((item)=>{if(!('tipo' in item)) return {codigo_articulo: item?.codigo, cantidad: item?.cantidad, precio: item?.precio}});
@@ -247,15 +278,49 @@ function NuevoPedidoProductos(){
                 }
             }
         //crea arrays de las bonificaciones aplicadas
-            let tmpResponse = response.map((item)=>({...item, descuento: 100, tipo: 'bonificado'}))
+            let tmpResponse = response.map((item)=>({...item, descuento: 100, dsct_porcentaje: 100, tipo: 'bonificado'}))
             handleNewSaleOrder({products: [...ghost_products_for_delete, ...tmpResponse]})
+        }
+    }
+
+    const aplicarDescuento = async() => {
+        let response = null
+        //obtener cuerpo para aplicar descuentos
+        let productos_ = nuevoPedido?.products?.filter((x)=>(!('tipo' in x)))
+        let requestBody = {
+            codigo_cliente: nuevoPedido?.cliente_codigo,
+            ubicacion_cliente: Number(nuevoPedido?.ubicacion),
+            productos: productos_?.map((x)=>({
+                "codigo_articulo": x?.codigo,
+                "codigo_familia": x?.codigo_familia,
+                "cantidad": x?.cantidad,
+                "precio": x?.precio,
+            }))}
+        //consulta descuentos solo si hay productos en lista
+        //descuento: es el total descuento
+        //dsct_porcentaje: el el porcentaje % por und
+        if(!!(productos_?.length)){
+            response = await postaplicarDescuento(requestBody)
+            if(!!response?.length){
+                // //aca se agrega la actualizacion
+                let ghost_products = [...nuevoPedido?.products]
+                    for( const objRes of response){
+                        ghost_products.forEach((item, index) => {
+                            if(!('tipo' in item) && item?.codigo === objRes?.codigo_articulo){
+                                item.descuento = objRes?.total_descuento;
+                                item.dsct_porcentaje = objRes?.descuento;
+                            }
+                        })
+                }
+                handleNewSaleOrder({products: [...ghost_products]})
+            }
         }
     }
 
     const calcularValorVenta = () => {
         if (largo_productos){
             let valorVenta = nuevoPedido?.products.reduce((acc, item)=>((item?.precio * item?.cantidad) + acc), 0);
-            valorVenta = truncate(valorVenta, 2)
+            // valorVenta = truncate(valorVenta, 2)
             //revisa que todos los productos esten con la misma unidad de moneda
             let unidad = {...nuevoPedido}?.products.map((item)=>(item?.unidad_moneda))
             unidad = unidad.filter((item, index)=>(unidad.indexOf(item) === index))
@@ -273,14 +338,43 @@ function NuevoPedidoProductos(){
     }
 
     const calcularImpuestos = () => {
+        //funcion que evaluar el valor de facto de impuesto
+        const returnDsctFactor = (pct) => {
+            if (!!pct) {
+                return ((100 - pct) * 0.01);
+            }else {
+                return 1;
+            }
+        }
+
         if (largo_productos){
-            let impuestoTotal = nuevoPedido?.products.reduce((acc, item)=>((item?.precio * item?.cantidad * ((item?.impuesto?.valor) / 100)) + acc), 0);
-            impuestoTotal = truncate(impuestoTotal, 2)
+            //esta parte calcular el impuesto sobre el total menos el descuento
+            let impuestoTotal = nuevoPedido?.products.reduce((acc, item)=>(((item?.precio *  returnDsctFactor(item?.dsct_porcentaje)) * item?.cantidad * ((item?.impuesto?.valor) * 0.01)) + acc), 0);
+            // impuestoTotal = truncate(impuestoTotal, 2)
             //revisa que todos los productos esten con la misma unidad de moneda
             let unidad = {...nuevoPedido}?.products.map((item)=>(item?.unidad_moneda))
             unidad = unidad.filter((item, index)=>(unidad.indexOf(item) === index))
             if(unidad?.length === 1){
                 return impuestoTotal
+            }else{
+                alert("Unidades de precio deben ser iguales")
+                return null
+            }
+        }else{
+            return 0;
+        }
+    }
+    
+    const calcularDescuento = () => {
+        if (largo_productos){
+            let descuentoTotal = nuevoPedido?.products.reduce((acc, item)=>((((item?.precio)*((item?.dsct_porcentaje || 0)* 0.01)) * item?.cantidad) + acc), 0);
+            // descuentoTotal = truncate(descuentoTotal, 2)
+            // descuentoTotal = descuentoTotal
+            //revisa que todos los productos esten con la misma unidad de moneda
+            let unidad = {...nuevoPedido}?.products.map((item)=>(item?.unidad_moneda))
+            unidad = unidad.filter((item, index)=>(unidad.indexOf(item) === index))
+            if(unidad?.length === 1){
+                return descuentoTotal
             }else{
                 alert("Unidades de precio deben ser iguales")
                 return null
@@ -307,10 +401,11 @@ function NuevoPedidoProductos(){
         // if (largo_productos){
             let [sum_valorventa, unit] = calcularValorVenta();
             if (!!sum_valorventa && !!unit){
+                let sum_descuento = calcularDescuento();
                 let sum_impuesto = calcularImpuestos();
-                let total = sum_valorventa + sum_impuesto;
+                let total = sum_valorventa - sum_descuento + sum_impuesto;
                 let total_cred_anti = total - (nuevoPedido.montos.anticipo + nuevoPedido.montos.nota_credito)
-                let temporal_montos = {...nuevoPedido.montos, total: total, total_cred_anti: total_cred_anti, valor_venta: sum_valorventa, impuesto: sum_impuesto, unidad: unit}
+                let temporal_montos = {...nuevoPedido.montos, total: total, total_cred_anti: total_cred_anti, valor_venta: truncate(sum_valorventa , 2), impuesto: sum_impuesto, descuento: truncate(sum_descuento || 0, 2),unidad: unit}
                 handleNewSaleOrder({montos: temporal_montos})
             }
             else{
@@ -320,8 +415,7 @@ function NuevoPedidoProductos(){
         }
         
         const setearCero = () => {
-            let temporal_montos = {...nuevoPedido.montos, total: 0, total_cred_anti: 0, valor_venta: 0, impuesto: 0, anticipo: 0, nota_credito: 0}
-
+            let temporal_montos = {...nuevoPedido.montos, total: 0, total_cred_anti: 0, valor_venta: 0, impuesto: 0, anticipo: 0, nota_credito: 0, descuento: 0}
             handleNewSaleOrder({montos: temporal_montos})
         }
         
@@ -346,26 +440,29 @@ function NuevoPedidoProductos(){
                     {(!deleteMode) ?(<BsTrash3Fill size={22}/>):(<BsArrowClockwise size={22}/>)} 
                 </button>
             </ListGroup.Item>
-            <ListGroup.Item className='tw-px-2' variant='secondary'>
-                <ListGroup as="ol" numbered={!!largo_productos ? true : false} className='tw-flex tw-gap-2 tw-pb-1'>
+            {/* <ListGroup.Item className='tw-px-1 tw-border-2 tw-border-gray-500 tw-rounded-md tw-mb-2' variant='secondary'> */}
+            <ListGroup.Item className='tw-px-1 tw-border-2 tw-border-gray-500 tw-mb-2' variant='secondary'>
+                <ListGroup as="ol" numbered={!!largo_productos ? true : false} className='tw-flex tw-gap-2 tw-pb-1 tw-h-96 tw-overflow-y-auto'>
                         {!largo_productos?(
                             <ListGroup.Item as="li" className="d-flex tw-w-full tw-flex-row tw-justify-start tw-gap-2 tw-pl-2 product_card tw-relative" variant="no style">
-                                <div className='tw-flex tw-justify-center tw-items-center tw-w-full tw-h-24 tw-font-medium'>
+                                {/* <div className='tw-flex tw-justify-center tw-items-center tw-w-full tw-h-24 tw-font-medium'> */}
+                                <div className='tw-flex tw-justify-center tw-items-center tw-w-full tw-h-[365px] tw-font-medium'>
                                     {"Lista vacia"}&nbsp;&nbsp;&nbsp;<BsArchive size={28}/>
                                 </div>
                             </ListGroup.Item>
                         ):(
                             nuevoPedido?.products.map((itx, index) => (
-                                <ListGroup.Item key={(index + 4).toString()} as="li" className="d-flex tw-w-full tw-flex-row tw-justify-start tw-gap-2 tw-pl-2 product_card tw-relative" variant="no style">
+                                // <ListGroup.Item key={(index + 4).toString()} as="li" className="d-flex tw-flex-row tw-justify-start tw-gap-2 tw-pl-1 product_card tw-relative" style={{width: 'calc(100% - 20px);'}} variant="no style">
+                                <ListGroup.Item key={(index + 4).toString()} as="li" className="d-flex tw-flex-row tw-rounded-md tw-justify-start tw-gap-2 tw-pl-1 product_card tw-relative" style={{width: 'calc(100% - 5px)'}} variant="no style">
                                     <div className='tw-w-full tw-h-24'>
                                         <div className='tw-text-sm tw-font-medium tw-h-10'>{itx?.descripcion} - {itx?.codigo}</div>
-                                        <div className='tw-text-base'>Descuento: {itx?.descuento}%</div>
+                                        <div className='tw-text-base'>Descuento: {itx?.dsct_porcentaje}%</div>
                                         <div className='tw-flex tw-justify-between'>
                                             <div className='tw-text-base'>pvp: <span className='tw-text-sm'>{itx?.unidad_moneda}</span> {itx?.precio}</div>
                                             <div className='tw-text-base'>cant: {itx?.cantidad}</div>
                                             <div className='tw-text-base'>subtotal: <span className='tw-text-sm'>{itx?.unidad_moneda}</span> {truncate(itx?.precio * itx?.cantidad, 2)}</div>
                                         </div>
-                                        <div className={`tw-absolute button-4 tw-right-[-5px] tw-top-[-5px] tw-px-0 tw-py-0 tw-bg-black tw-text-white item-delete ${!deleteMode? 'tw-invisible tw-opacity-0': 'tw-visible tw-opacity-100'}`} onClick={()=>{eliminarProducto(itx)}}>
+                                        <div className={`tw-absolute button-4 tw-right-[-0px] tw-top-[-0px] tw-px-0 tw-py-0 tw-bg-black tw-text-white item-delete ${!deleteMode? 'tw-invisible tw-opacity-0': 'tw-visible tw-opacity-100'}`} onClick={()=>{eliminarProducto(itx)}}>
                                                 <BsX size={20}/>
                                         </div>
                                         <div className={`tw-absolute button-4 tw-left-[0px] tw-bottom-[0px] tw-px-0 tw-py-0 tw-bg-yellow-400 tw-text-black item-delete ${itx?.tipo === 'bonificado'? 'tw-visible tw-opacity-100': 'tw-invisible tw-opacity-0'}`} onClick={()=>{eliminarProducto(itx)}}>
@@ -388,7 +485,7 @@ function NuevoPedidoProductos(){
             </ListGroup.Item>
             <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-end tw-gap-2' variant='secondary'>
                 <div className='myFontFamily tw-font-medium'>Impuestos:</div>
-                <div className='myFontFamily tw-font-normal tw-bg-white product_card tw-rounded-sm tw-min-w-32 tw-text-end tw-px-2'>{nuevoPedido?.montos?.unidad} {nuevoPedido?.montos?.impuesto}</div>
+                <div className='myFontFamily tw-font-normal tw-bg-white product_card tw-rounded-sm tw-min-w-32 tw-text-end tw-px-2'>{nuevoPedido?.montos?.unidad} {truncate(nuevoPedido?.montos?.impuesto, 2)}</div>
             </ListGroup.Item>
             <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-end tw-gap-2' variant='secondary'>
                 <div className='myFontFamily tw-font-medium'>Importe total:</div>
@@ -406,7 +503,7 @@ function NuevoPedidoProductos(){
                 <button className='button-4 tw-w-full' disabled={!isClientExits?true:false} onClick={()=>{aplicarBonificacion()}}>
                     Aplicar bonificación
                 </button>
-                <button className='button-4 tw-w-full' disabled={!isClientExits?true:false} onClick={()=>{console.log("Hola 1")}}>
+                <button className='button-4 tw-w-full' disabled={!isClientExits?true:false} onClick={()=>{aplicarDescuento()}}>
                     Aplicar descuento
                 </button>
                 <button className='button-4 tw-w-full' disabled={!isClientExits?true:false} onClick={()=>{
@@ -414,9 +511,11 @@ function NuevoPedidoProductos(){
                     Aplicar anticipos y notas de creditos
                 </button>
             </ListGroup.Item>
-            {isClientExits && (<hr></hr>)}
+            {/* {isClientExits && (<hr></hr>)} */}
         </>
     )
 }
 
 export {NuevoPedidoCabecera, NuevoPedidoProductos}
+
+//ejemplo de basemodel en fastapi con lista?

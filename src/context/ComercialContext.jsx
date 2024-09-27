@@ -24,7 +24,8 @@ function ComercialContext({children}) {
     const [showInputTextModal, setShowInputTextModal] = useState({show: false, modalTitle: '', returnedValue: undefined, options: [], tipomodal:null, operacion:null});
     //orden de pedido
     const [nuevoPedido, setNuevoPedido] =  useState({cliente_codigo: null, numero:null, ruc:null, razonsocial:null, telefono: null, fcontable: null, fentrega: null, direccionentrega:null, 
-      ructransporte: null, moneda:null, codigogrupo: null, condicionpago:null, products: [], montos: {valor_venta: 0, descuento: 0, impuesto: 0, total_cred_anti: 0, total: 0, unidad: null, anticipo: 0, nota_credito: 0}})
+      ructransporte: null, moneda:null, codigogrupo: null, condicionpago:null, products: [], montos: {valor_venta: 0, descuento: 0, impuesto: 0, total_cred_anti: 0, total: 0,
+        unidad: null, anticipo: 0, nota_credito: 0}})
     
     //handlers
     const handleShow = () => setShowSecurity(true);

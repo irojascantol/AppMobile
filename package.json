@@ -16,6 +16,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@azure/msal-browser": "^3.24.0",
+    "@azure/msal-react": "^2.1.0",
     "@heroicons/react": "^2.1.5",
     "@material-tailwind/react": "^2.1.9",
     "axios": "^1.7.5",

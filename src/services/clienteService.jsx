@@ -38,4 +38,26 @@ async function getProductoPorFiltro(innerParams) {
     }
 }
 
-export {getClientePorFiltro, getProductoPorFiltro}
+async function getTransportistaPorFiltro(innerParams) {
+    innerParams = {
+        filtro: innerParams?.filtro
+    }
+    let data_body = {...innerParams}
+    delete data_body['usuario_codigo']
+    try{
+        const response = await axios(`${mainURL}/comercial/ventas/pedido/listatransportistasporfiltro`, {
+            params: innerParams
+        });
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoGeneral) _ ${error}`);
+        undefined;
+    }
+}
+
+export {getClientePorFiltro, getProductoPorFiltro, getTransportistaPorFiltro}

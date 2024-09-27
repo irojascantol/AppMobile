@@ -9,6 +9,7 @@ import { decodeJWT } from "../../utils/decode";
 import meLogo from './assets/cantol_black.png';
 import 'C:/AppMobile/src/style/login.css'
 import { reverseString } from "../../utils/string";
+import { useMsal } from "@azure/msal-react";
 
 const LoginForm = () => {
   const [inputUsername, setInputUsername] = useState("");
@@ -18,30 +19,46 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { handleLogo, handleUser } = useContext(commercialContext);
+  const { instance, accounts } = useMsal();
 
   //inicia proceso de autenticacion
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    const responseJson = await Login(inputUsername, inputPassword, inputCompany);
-    await delay(200);
-    setLoading(false);
-    if (responseJson !== undefined){
-      if (!responseJson.detail) {
-        sessionStorage.setItem("CDTToken", responseJson);
-        const {username} = await decodeJWT();
-        sessionStorage.setItem("USR", reverseString(username));
-        handleUser(username)
-        handleLogo(inputCompany)
-        setShow(false);
-        navigate('/main')
-      } else {            
-        setShow(true);
-      }
+    try{
+      const loginResponse = await instance.loginPopup({
+        scopes: ['User.read']
+      })
+      console.log('Login successful:', loginResponse)
+    }catch(error){
+      console.error('Login Failed', error);
     }
+    // setLoading(true);
+    // const responseJson = await Login(inputUsername, inputPassword, inputCompany);
+    // await delay(200);
+    // setLoading(false);
+    // if (responseJson !== undefined){
+    //   if (!responseJson.detail) {
+    //     sessionStorage.setItem("CDTToken", responseJson);
+    //     const {username} = await decodeJWT();
+    //     sessionStorage.setItem("USR", reverseString(username));
+    //     handleUser(username)
+    //     handleLogo(inputCompany)
+    //     setShow(false);
+    //     navigate('/main')
+    //   } else {            
+    //     setShow(true);
+    //   }
+    // }
   };
 
-  const handlePassword = () => {alert("Contactar con TI Cantol")};
+  const handlePassword = async () => {
+    // alert("Contactar con TI Cantol")
+      try {
+        await instance.logoutPopup();
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+  };
 
   return (
     <div
@@ -123,10 +140,6 @@ const LoginForm = () => {
           </Button>
         </div>
       </Form>
-      {/* Footer */}
-      {/* <div className="w-100 mb-2 position-absolute bottom-0 start-50 translate-middle-x text-white text-center">
-        Made by Hendrik C | &copy;2022
-      </div> */}
     </div>
   );
 };

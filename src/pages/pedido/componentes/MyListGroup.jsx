@@ -37,7 +37,7 @@ function MyListGroup({data, plantilla, handleCarusel, tipoPedido}) {
     )
   }else if(['general', 'logistica', 'finanzas', 'contenido', 'nuevopedidocabecera', 'nuevopedidoproductos', 'nuevopedidototal' ].includes(plantilla)){
     return(
-      <ListGroup as="ol">
+      <ListGroup as="ol" className={"tw-h-fit tw-bg-gray-500"}>
         {plantillas[plantilla](data, tipoPedido)}
       </ListGroup>
     )

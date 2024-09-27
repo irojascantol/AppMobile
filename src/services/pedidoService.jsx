@@ -146,5 +146,28 @@ async function getCreditoAnticipo(innerParams) {
     }
 }
 
+async function postaplicarDescuento(requestBody) {
+    try{
+        const response = await axios.post(`${mainURL}/comercial/ventas/pedido/aplicardescuentonivel1`, requestBody);
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return [];
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        undefined;
+    }
+}
 
-export {getPedido, getDetallePedidoGeneral, getDetallePedidoLogistica, getDetallePedidoFinanzas, getDetallePedidoContenido, getNuevoPedidoClave, getProductosBonificacion, getCreditoAnticipo}
+export {getPedido, 
+        getDetallePedidoGeneral, 
+        getDetallePedidoLogistica,
+        getDetallePedidoFinanzas,
+        getDetallePedidoContenido,
+        getNuevoPedidoClave,
+        getProductosBonificacion,
+        getCreditoAnticipo,
+        postaplicarDescuento,
+    }
