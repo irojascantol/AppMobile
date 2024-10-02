@@ -5,17 +5,20 @@ import '../../style/accordion.css'
 import PedidoModal from '../../componentes/modal/pedidoModal';
 import { Anticipo_Credito, BuscarModal, IngresarFecha, IngresarTexto, SelectorCombo , Institucional_Campo} from './plantillas/modalPlantilla';
 import { commercialContext } from '../../context/ComercialContext';
-import { getNuevoPedidoClave } from '../../services/pedidoService';
+import { getNuevoPedidoClave, guardarNuevoPedido } from '../../services/pedidoService';
 import { decodeJWT } from '../../utils/decode';
 import { getFormatShipDate} from '../../utils/humandateformat';
 import { getCurrentLocation } from '../../utils/location';
+import ReCAPTCHA from "react-google-recaptcha";
+import { mergeComments } from './utils';
 
 const tipoModal = {
   text: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<IngresarTexto nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'number'}/>),
   combo: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<SelectorCombo nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'text'}/>),
   date: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<IngresarFecha nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'date'}/>),
   Anticipo_Credito: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Anticipo_Credito nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />),
-  Institucional_Campos: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Institucional_Campo nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />)
+  Institucional_Campos: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Institucional_Campo nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />),
+  Final_Pedido: (nuevopedido, modalValues, handlemodal)=>(<Final_Pedido nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder}/>)
 }
 
 export default function NuevoPedido() {
@@ -45,13 +48,49 @@ export default function NuevoPedido() {
 
   //guardar OV
   const guardarOV = async () => {
-      let currentLocation = await getCurrentLocation();
-      // setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
-      if ('message' in currentLocation){
-        setMensaje(currentLocation?.message)
-      }else{
-        setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
-      }
+    console.log(nuevoPedido)
+    let body = {
+        CardCode: nuevoPedido?.cliente_codigo,
+        DocDueDate: nuevoPedido?.fentrega,
+        U_MSSM_CLM: nuevoPedido?.numero,
+        DiscountPercent: nuevoPedido?.montos?.descuento || 0,
+        Comments: mergeComments(nuevoPedido?.comentarios.vendedor, nuevoPedido?.comentarios.nota_anticipo),
+        PaymentGroupCode: nuevoPedido?.condicionpago[0]?.PaymentGroupCode,
+        FederalTaxID: nuevoPedido?.ruc || '',
+        ShipToCode: nuevoPedido?.direccionentrega[0]?.direccion_codigo || '',
+        U_MSSL_RTR: nuevoPedido?.ructransporte?.documento_transporte || '',
+        U_MSSF_CEX1: nuevoPedido?.institucional?.cmp1,
+        U_MSSF_CEX2: nuevoPedido?.institucional?.cmp2,
+        U_MSSF_CEX3: nuevoPedido?.institucional?.cmp3,
+        U_MSSF_ORDC: nuevoPedido?.institucional?.oc,
+        grupo_familia: nuevoPedido?.grupo_familia,
+        DocumentLines: nuevoPedido?.products?.map((product)=>({
+          ItemCode: product?.codigo,
+          Quantity: product?.cantidad,
+          TaxCode: product?.impuesto?.codigo,
+          UnitPrice: product?.precio,
+          DiscountPercent: product?.dsct_porcentaje,
+          U_MSSC_NV1: product?.dsct_porcentaje,
+          U_MSSC_NV2: 0,
+          U_MSSC_NV3: 0,
+          U_MSSC_DSC: product?.dsct_porcentaje,
+          U_MSS_ITEMBONIF: ('tipo' in product)?'Y':'N',
+          U_MSSC_BONI: ('tipo' in product)?'Y':'N',
+        }))
+    }
+    console.log(body)
+    const response = await guardarNuevoPedido(body);
+    // let currentLocation = await getCurrentLocation();
+    // // setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
+    // if ('message' in currentLocation){
+    //   setMensaje(currentLocation?.message)
+    // }else{
+    //   setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
+    // }
+  }
+
+  function onChange(value) {
+    console.log("Captcha value:", value);
   }
 
   return (
@@ -83,12 +122,16 @@ export default function NuevoPedido() {
         </Accordion.Body>
       </Accordion.Item>
     </Accordion>
-    <div className='tw-flex'>
+    <div className='tw-flex tw-flex-col tw-items-center tw-border-2'>
       <button className='button-14 tw-w-2/3 tw-h-10 tw-my-4 tw-font-sans tw-font-medium' disabled={false} style={{margin: '0 auto'}} onClick={guardarOV}>
         Grabar Orden de Venta
       </button>
+      <ReCAPTCHA
+        sitekey="6Lfiy1MqAAAAAHcepIzS3inu4JEisDbyKWfaXuDp"
+        onChange={onChange}
+      />,
     </div>
-    <h1>{mensaje}</h1>
+    {/* <h1>{mensaje}</h1> */}
     </>
   );
 }

@@ -24,41 +24,26 @@ const LoginForm = () => {
   //inicia proceso de autenticacion
   const handleSubmit = async (event) => {
     event.preventDefault();
-    try{
-      const loginResponse = await instance.loginPopup({
-        scopes: ['User.read']
-      })
-      console.log('Login successful:', loginResponse)
-    }catch(error){
-      console.error('Login Failed', error);
+    setLoading(true);
+    const responseJson = await Login(inputUsername, inputPassword, inputCompany);
+    await delay(200);
+    setLoading(false);
+    if (responseJson !== undefined){
+      if (!responseJson.detail) {
+        sessionStorage.setItem("CDTToken", responseJson);
+        const {username} = await decodeJWT();
+        sessionStorage.setItem("USR", reverseString(username));
+        handleUser(username)
+        handleLogo(inputCompany)
+        setShow(false);
+        navigate('/main')
+      } else {            
+        setShow(true);
+      }
     }
-    // setLoading(true);
-    // const responseJson = await Login(inputUsername, inputPassword, inputCompany);
-    // await delay(200);
-    // setLoading(false);
-    // if (responseJson !== undefined){
-    //   if (!responseJson.detail) {
-    //     sessionStorage.setItem("CDTToken", responseJson);
-    //     const {username} = await decodeJWT();
-    //     sessionStorage.setItem("USR", reverseString(username));
-    //     handleUser(username)
-    //     handleLogo(inputCompany)
-    //     setShow(false);
-    //     navigate('/main')
-    //   } else {            
-    //     setShow(true);
-    //   }
-    // }
   };
 
-  const handlePassword = async () => {
-    // alert("Contactar con TI Cantol")
-      try {
-        await instance.logoutPopup();
-      } catch (error) {
-        console.error('Logout failed:', error);
-      }
-  };
+  const handlePassword = async () => {alert("Contactar con TI Cantol")};
 
   return (
     <div

@@ -13,7 +13,7 @@ import { decodeJWT } from '../../../utils/decode';
 import { BsSearch } from 'react-icons/bs';
 import { upSelectedOption } from '../../../utils/array';
 import { commercialContext } from '../../../context/ComercialContext';
-import { getCreditoAnticipo } from '../../../services/pedidoService';
+import { getCreditoAnticipo, obtenerDescuentoDocumento } from '../../../services/pedidoService';
 import { useAsyncError } from 'react-router-dom';
 
 
@@ -110,7 +110,7 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
     const [isSpinner,  setIsSpinner] = useState(false);
     const [currentItem, setCurrentItem] = useState(null);
     const [debounceTextFilter] = useDebounce(textFilter, 500);
-    const {handleInputTextModal, showInputTextModal, nuevoPedido} = useContext(commercialContext)
+    const {handleInputTextModal, showInputTextModal, nuevoPedido, isClientChanged, handleClienteChange} = useContext(commercialContext)
     const prevState = useRef(false)
 
     useEffect(()=>{
@@ -149,7 +149,7 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
         }
     },[showInputTextModal.returnedValue])
     
-    const agregarItem = (item) => {
+    const agregarItem = async (item) => {
         //revisar si el producto ya esta agregado
         if(buscarModalValues?.operacion === 'Producto') {
             let tmpList = buscarModalValues.options[0]?.products;
@@ -161,9 +161,26 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
 
         }else{alert("El producto ya se encuentra agregado");}
         }else if(buscarModalValues?.operacion === 'Cliente'){
-            console.log(item)
-            handleNewSaleOrder(fillData[buscarModalValues?.operacion](item, nuevoPedido));
-            handleCloseModal();
+            let tmpCliente = fillData[buscarModalValues?.operacion](item, nuevoPedido)
+            //obtener por primera vez el descuento por documento
+            if (!!tmpCliente?.condicionpago[0] && tmpCliente?.canal_familia){
+                let body = {
+                    PaymentGroupCode: tmpCliente?.condicionpago[0]?.PaymentGroupCode,
+                    codigo_canal_cliente: tmpCliente?.canal_familia?.codigo_canal,
+                }
+                let descuentoDoc = await obtenerDescuentoDocumento(body)
+                //formato de llegada {"descuento_documento": valor}
+                //seteo del descuento para todo el documento
+                if (!!descuentoDoc){
+                    //activa el caso de que se cambie un cliente, debe actualizas descuentos
+                    if(!!isClientChanged.dsct){handleClienteChange({active: true})}
+                    handleNewSaleOrder({...fillData[buscarModalValues?.operacion](item, nuevoPedido), montos: {...nuevoPedido.montos, descuento: descuentoDoc?.descuento_documento, anticipo: 0, nota_credito: 0, total_cred_anti: (nuevoPedido?.montos.total || 0)}});
+                    handleCloseModal();
+                }else{
+                    handleNewSaleOrder(fillData[buscarModalValues?.operacion](item, nuevoPedido));
+                    handleCloseModal();
+                }
+            }
         }else if(buscarModalValues?.operacion === 'Transportista'){
             handleNewSaleOrder(fillData[buscarModalValues?.operacion](item));
             handleCloseModal();
@@ -211,23 +228,34 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
 }
 
 function IngresarTexto({modalValues, handleInputTextModal, handleNewSaleOrder, type}){
-    const [ value,  setValue ] = useState('')
+    let initComment = modalValues?.operacion === 'comentarios' ? (modalValues?.options?.vendedor || ''): '';
+    type = modalValues?.operacion === 'comentarios' ? 'text' : type;
+    let rows = modalValues?.operacion === 'comentarios' ? 3 : 1;
+    let as = modalValues?.operacion === 'comentarios' ? 'textarea' : 'input';
+    const [ value,  setValue ] = useState(initComment)
     return(
     <Form onSubmit={(x)=>{x.preventDefault()}}>
         <Form.Control
         type={type}
         id="inputPassword5"
+        value={value}
+        autoComplete='off'
         onChange={(x)=>{
             setValue(x.target.value);
         }}
+        rows={rows}
+        as={as}
       />
         <div className='tw-w-full tw-flex tw-justify-end'>
             <button className='button-4 tw-w-fit tw-mt-2 tw-text-yellow-400 bg-dark' onClick={()=>{
-                    if(modalValues.operacion !== 'agregarProducto'){
-                        handleNewSaleOrder({ructransporte: value}); 
+                    if(modalValues.operacion === 'comentarios'){
+                        handleNewSaleOrder({comentarios: {...modalValues?.options, vendedor: value.toString().trim()}}); 
                         handleInputTextModal({show: false});
                     }else if(modalValues.operacion === 'agregarProducto'){
                         handleInputTextModal({show: false, returnedValue: value});
+                    }else{
+                        handleNewSaleOrder({ructransporte: value}); 
+                        handleInputTextModal({show: false});
                     }
                     }}>
                     Ingresar
@@ -252,16 +280,52 @@ function IngresarFecha({nuevopedido, modalValues, handleInputTextModal, handleNe
 
 function SelectorCombo({modalValues, handleInputTextModal, handleNewSaleOrder, type}){
     return(
-    <Form.Select aria-label="Default select example" onChange={(x)=>{
-        // handleNewSaleOrder({direccionentrega: upSelectedOption(modalValues.options, x.target.value)});
+    <Form.Select aria-label="Default select example" onChange={async (x)=>{
         let tmpObj = {}
-        tmpObj[modalValues.operacion] = upSelectedOption(modalValues.options, x.target.value)
-        handleNewSaleOrder(tmpObj);
-        handleInputTextModal({show: false})
-    }}>
-        {modalValues.options.map((x, index)=>(
-            <option key={(index+1).toString()} value={x}>{x}</option>))
+        //cuando operacion es "Condicionpago" ordena el item seleccinado a primera posicion por grupo de pago
+        tmpObj[modalValues.operacion] = upSelectedOption(modalValues.options, x.target.value, modalValues.operacion);
+        if (modalValues.operacion === 'condicionpago'){
+            //actualizar el dsct documento
+            if(!!modalValues?.data?.canal_familia?.codigo_canal && !!tmpObj?.condicionpago){
+                let body = {
+                    PaymentGroupCode: tmpObj?.condicionpago[0]?.PaymentGroupCode,
+                    codigo_canal_cliente: modalValues?.data?.canal_familia?.codigo_canal,
+                }
+                let descuentoDoc = await obtenerDescuentoDocumento(body)
+                //formato de llegada {"descuento_documento": valor}
+                //seteo del descuento para todo el documento
+                if (!!descuentoDoc){
+                    handleNewSaleOrder({...tmpObj, montos: {...modalValues?.data?.montos, descuento: descuentoDoc?.descuento_documento}});
+                    handleInputTextModal({show: false});
+                }else{
+                    handleNewSaleOrder(tmpObj);
+                    handleInputTextModal({show: false});
+                }
+            }
+        }else{
+            handleNewSaleOrder(tmpObj);
+            handleInputTextModal({show: false});
         }
+
+    }}>
+
+    {modalValues.options.map((x, index)=>{
+        if(modalValues?.operacion === 'direccionentrega'){
+            return (
+                    <option key={(index+1).toString()} value={x?.direccion_codigo}>{x?.direccion_entrega}</option>
+                ) 
+            }
+        else if(modalValues?.operacion === 'condicionpago'){
+                return (
+                    <option key={(index+1).toString()} value={x?.PaymentGroupCode}>{x?.PymntGroup}</option>
+                )
+        }else{
+                return (
+                    <option key={(index+1).toString()} value={x}>{x}</option>
+                )
+            }
+        })
+    }
     </Form.Select>
     )
 }
@@ -283,7 +347,7 @@ function Anticipo_Credito({nuevopedido, modalValues, handleInputTextModal, handl
         <ListGroup as="ol" className='tw-flex tw-gap-2 tw-pb-1'>
             <ListGroup.Item className='tw-px-2 tw-py-1 tw-flex tw-justify-start tw-flex-col tw-gap-2' variant='secondary'>
                 <div className='myFontFamily tw-font-medium tw-text-left tw-w-[188px]'>Total facturas de anticipo:</div>
-                <div className='tw-flex tw-justify-start tw-gap-2'> 
+                <div className='tw-flex tw-justify-start tw-gap-2'>
                     <div className='myFontFamily tw-font-medium tw-text-right tw-w-[188px]'>{`Disponible: S/.${!!dataclient?.anticipo?dataclient?.anticipo:'0'}`}</div>
                     <input type='number' value={!inputFA ? '': inputFA} disabled={!dataclient?.anticipo} onChange={(event)=>{setInputFA(event.target.value)}} 
                     className='tw-block tw-min-w-[130px] tw-bg-white' placeholder='Ingrese monto' onBlur={e => {
@@ -312,7 +376,6 @@ function Anticipo_Credito({nuevopedido, modalValues, handleInputTextModal, handl
     )
 }
 
-
 function Institucional_Campo(params){
     const [input, setinput] = useState({oc: '', cmp1: '', cmp2: '', cmp3: ''});
     const handleInput = (obj) => setinput({...input, ...obj})
@@ -320,7 +383,9 @@ function Institucional_Campo(params){
     const guardarDatosInstitucional = () => {
         //oc obligatorio
         if(input.oc){
-            params.handleInputTextModal({show: false, returnedValue: {body: input}})
+            params.handleNewSaleOrder({institucional: input})
+            params.handleInputTextModal({show: false})
+            // params.handleInputTextModal({show: false, returnedValue: {body: input}})
         }else{
             alert("Ingrese orden de compra")
         }
@@ -363,5 +428,4 @@ function Institucional_Campo(params){
     )
 }
 
-//set max length of input text field?
 export {BuscarModal, IngresarTexto, IngresarFecha, SelectorCombo, Anticipo_Credito, Institucional_Campo}

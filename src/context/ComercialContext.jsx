@@ -22,10 +22,11 @@ function ComercialContext({children}) {
     const [tabActivePedido,  setTabActivePedido] = useState('general');
     const [searchClientModal,  setSearchclientModalOpen] = useState({show: false, modalTitle: '', returnedValue: undefined, options: [], operacion: null, placeholder: null});
     const [showInputTextModal, setShowInputTextModal] = useState({show: false, modalTitle: '', returnedValue: undefined, options: [], tipomodal:null, operacion:null});
+    const [isClientChanged, setClienteChange] = useState({active: false, dsct: false});
     //orden de pedido
     const [nuevoPedido, setNuevoPedido] =  useState({cliente_codigo: null, numero:null, ruc:null, razonsocial:null, telefono: null, fcontable: null, fentrega: null, direccionentrega:null, 
-      ructransporte: null, moneda:null, codigogrupo: null, condicionpago:null, products: [], montos: {valor_venta: 0, descuento: 0, impuesto: 0, total_cred_anti: 0, total: 0,
-        unidad: null, anticipo: 0, nota_credito: 0}})
+      ructransporte: null, moneda:null, codigogrupo: null, condicionpago:null, comentarios:{vendedor: null, nota_anticipo: null}, products: [], institucional: null, montos: {valor_venta: 0, descuento: 0, impuesto: 0, total_cred_anti: 0, total: 0,
+        unidad: null, anticipo: 0, nota_credito: 0,}})
     
     //handlers
     const handleShow = () => setShowSecurity(true);
@@ -40,6 +41,8 @@ function ComercialContext({children}) {
     const handleNewSaleOrder = (obj) => setNuevoPedido({...nuevoPedido, ...obj})
     //handlers input modal / combo - text - date
     const handleInputTextModal = (obj) => setShowInputTextModal({...showInputTextModal, ...obj})
+    //hanlder actualizacion de cliente
+    const handleClienteChange = (obj) => {setClienteChange({...isClientChanged, ...obj})}
   
   return (
     <commercialContext.Provider value={
@@ -52,6 +55,7 @@ function ComercialContext({children}) {
         showSecurity,
         searchClientModal,
         showInputTextModal,
+        isClientChanged,
         nuevoPedido,
         setLoading,
         handleShow,
@@ -66,6 +70,8 @@ function ComercialContext({children}) {
         handleNewSaleOrder,
         // handler text modales
         handleInputTextModal,
+        // handler update client
+        handleClienteChange
       }
     }>
         {children}

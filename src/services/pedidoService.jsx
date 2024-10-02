@@ -161,6 +161,36 @@ async function postaplicarDescuento(requestBody) {
     }
 }
 
+async function guardarNuevoPedido(requestBody) {
+    try{
+        const response = await axios.post(`${mainURL}/comercial/ventas/pedido/grabarordenventa`, requestBody);
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return null;
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
+        return null;
+    }
+}
+
+async function obtenerDescuentoDocumento(requestBody) {
+    try{
+        const response = await axios.post(`${mainURL}/comercial/ventas/pedido/aplicardescuentodocumento`, requestBody);
+        if (!!response.data && response.status === 200){
+            return response.data;
+        }else
+        {
+            return null;
+        }
+    }catch(error){
+        console.log(`An Error ocurred: (obtenerDescuentoDocumento) _ ${error}`);
+        return null;
+    }
+}
+
 export {getPedido, 
         getDetallePedidoGeneral, 
         getDetallePedidoLogistica,
@@ -170,4 +200,6 @@ export {getPedido,
         getProductosBonificacion,
         getCreditoAnticipo,
         postaplicarDescuento,
+        guardarNuevoPedido,
+        obtenerDescuentoDocumento,
     }
