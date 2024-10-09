@@ -63,6 +63,54 @@ function Rechazado({item}) {
   )
 }
 
+function PendienteChofer({item}) {
+return (
+    <ListGroup.Item
+    as="li"
+    className="active:tw-border-yellow-400 tw-pl-1"
+    >
+      <div
+        className="d-flex justify-content-between align-items-start active:tw-border-yellow-400"
+      >
+      <div className="ms-2 me-auto">
+        <div className="tw-font-semibold">{item.razon_social}</div>
+        <div className='text-secondary tw-text-md'>RUC: {item.ruc}</div>
+      </div>
+      <div className='tw-h-12 tw-flex tw-flex-col tw-justify-between tw-gap-0'>
+        <div className='text-secondary'>{getHumanDateFormat(item.fecha_entrega)}</div>
+        <div className='text-secondary tw-text-md tw-font-light'>{item.numero_guia}</div>
+      </div>
+      </div>
+      <div className='text-secondary tw-text-md tw-pl-2'>Dirección: 
+      <span className='tw-text-sm'> {item.direccion_entrega}</span></div>
+    </ListGroup.Item>
+  )
+}
+
+function CompletoChofer({item}) {
+  return (
+    <ListGroup.Item
+    as="li"
+    className="active:tw-border-yellow-400 tw-pl-1"
+    >
+      <div
+        className="d-flex justify-content-between align-items-start active:tw-border-yellow-400"
+      >
+      <div className="ms-2 me-auto">
+        <div className="tw-font-semibold">{item.razon_social}</div>
+        <div className='text-secondary tw-text-md'>RUC: {item.ruc}</div>
+      </div>
+      <div className='tw-h-12 tw-flex tw-flex-col tw-justify-between tw-gap-0'>
+        <div className='text-secondary'>{getHumanDateFormat(item.fecha_entrega)}</div>
+        <div className='text-secondary tw-text-md tw-font-light'>{item.numero_guia}</div>
+      </div>
+      </div>
+      <div className='text-secondary tw-text-md tw-pl-2'>Dirección: 
+      <span className='tw-text-sm'> {item.direccion_entrega}</span></div>
+    </ListGroup.Item>
+  )
+}
+
 function Contenido_Articulos({item}) {
   return (
     <ListGroup.Item
@@ -95,6 +143,6 @@ function Contenido_Articulos({item}) {
   )
 }
 
-export { Pendiente, Aprobado, Rechazado, Contenido_Articulos}
+export { Pendiente, Aprobado, Rechazado, Contenido_Articulos, PendienteChofer, CompletoChofer}
 
 //CREATE BUTTON REACT jsx?

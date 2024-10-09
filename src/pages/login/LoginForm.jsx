@@ -6,10 +6,13 @@ import { Login } from "../../services/login";
 import { delay } from "../../utils/delay";
 import { useNavigate } from "react-router-dom";
 import { decodeJWT } from "../../utils/decode";
+import { reverseString } from "../../utils/string";
+// import { useMsal } from "@azure/msal-react";
+import ReCAPTCHA from 'react-google-recaptcha';
+import useRecaptcha from "../../hooks/useRecaptcha";
 import meLogo from './assets/cantol_black.png';
 import 'C:/AppMobile/src/style/login.css'
-import { reverseString } from "../../utils/string";
-import { useMsal } from "@azure/msal-react";
+// import { validarCaptcha } from "../../services/reCaptcha";
 
 const LoginForm = () => {
   const [inputUsername, setInputUsername] = useState("");
@@ -19,15 +22,23 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { handleLogo, handleUser } = useContext(commercialContext);
-  const { instance, accounts } = useMsal();
+  const { capchaToken, recaptchaRef, handleRecaptcha } = useRecaptcha();
+  // const { instance, accounts } = useMsal();
 
   //inicia proceso de autenticacion
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    const responseJson = await Login(inputUsername, inputPassword, inputCompany);
-    await delay(200);
-    setLoading(false);
+    //aqui se tiene validar catpcha con el backend
+    // const response = await validarCaptcha(capchaToken)
+    let responseJson = undefined;
+
+    if(capchaToken && inputUsername && inputPassword && inputCompany){
+      setLoading(true);
+      responseJson = await Login(inputUsername, inputPassword, inputCompany);
+      await delay(200);
+      setLoading(false);
+    }
+
     if (responseJson !== undefined){
       if (!responseJson.detail) {
         sessionStorage.setItem("CDTToken", responseJson);
@@ -38,7 +49,7 @@ const LoginForm = () => {
         setShow(false);
         navigate('/main')
       } else {            
-        setShow(true);
+        setShow(true); 
       }
     }
   };
@@ -64,7 +75,7 @@ const LoginForm = () => {
         </div>
         {/* Termina logo */}
 
-        <div className="h4 my-3 text-center">Sistema App Cantol</div>
+        <div className="h4 my-3 text-center">SWC</div>
         {/* Empieza aviso contraseña o clave incorrecta */}
         {show ? (
           <Alert
@@ -106,12 +117,19 @@ const LoginForm = () => {
             required
           />
         </Form.Group>
+        <div className="tw-flex tw-justify-center tw-mt-3">
+          <ReCAPTCHA
+          ref={recaptchaRef}
+          sitekey="6Lfiy1MqAAAAAHcepIzS3inu4JEisDbyKWfaXuDp"
+          onChange={handleRecaptcha}
+          />
+        </div>
         {!loading ? (
-          <Button className="w-100 tw-mt-3" variant="dark" type="submit">
+          <Button className="w-100 tw-mt-3" variant="dark" type="submit" disabled={!capchaToken}>
             <span className="tw-text-sm">INGRESAR</span>
           </Button>
         ) : (
-          <Button className="w-100 tw-mt-3" variant="dark" type="submit" disabled>
+          <Button className="w-100 tw-mt-3" variant="dark" type="submit" disabled={!capchaToken}>
             <span className="tw-text-sm">INGRESANDO....</span>
           </Button>
         )}

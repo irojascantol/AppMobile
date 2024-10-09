@@ -3,14 +3,14 @@ import Accordion from 'react-bootstrap/Accordion';
 import { MyListGroup } from './componentes/MyListGroup';
 import '../../style/accordion.css'
 import PedidoModal from '../../componentes/modal/pedidoModal';
-import { Anticipo_Credito, BuscarModal, IngresarFecha, IngresarTexto, SelectorCombo , Institucional_Campo} from './plantillas/modalPlantilla';
+import { Anticipo_Credito, BuscarModal, IngresarFecha, IngresarTexto, SelectorCombo , Institucional_Campo } from './plantillas/modalPlantilla';
 import { commercialContext } from '../../context/ComercialContext';
 import { getNuevoPedidoClave, guardarNuevoPedido } from '../../services/pedidoService';
 import { decodeJWT } from '../../utils/decode';
 import { getFormatShipDate} from '../../utils/humandateformat';
+import Spinner from 'react-bootstrap/Spinner';
 import { getCurrentLocation } from '../../utils/location';
-import ReCAPTCHA from "react-google-recaptcha";
-import { mergeComments } from './utils';
+import { makeSaleOrderBody } from './utils';
 
 const tipoModal = {
   text: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<IngresarTexto nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'number'}/>),
@@ -18,8 +18,8 @@ const tipoModal = {
   date: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<IngresarFecha nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} type={'date'}/>),
   Anticipo_Credito: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Anticipo_Credito nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />),
   Institucional_Campos: (nuevopedido, modalValues, handlemodal, setSaleOrder, tipo)=>(<Institucional_Campo nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder} />),
-  Final_Pedido: (nuevopedido, modalValues, handlemodal)=>(<Final_Pedido nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder}/>)
 }
+// Final_Pedido: (nuevopedido, modalValues, handlemodal, setSaleOrder)=>(<Final_Pedido nuevopedido={nuevopedido} modalValues={modalValues} handleInputTextModal={handlemodal} handleNewSaleOrder={setSaleOrder}/>)
 
 export default function NuevoPedido() {
   const { 
@@ -29,69 +29,59 @@ export default function NuevoPedido() {
           //handle nuevo pedido
           nuevoPedido,
           handleNewSaleOrder, 
+          handleSaleOrder2Init,
           //handle input modals combo/ date/ text field
           showInputTextModal: modalValues,
+          //valor para conocer si cambio cliente
+          isClientChanged,
           handleInputTextModal} = useContext(commercialContext);
         
-  const [mensaje, setMensaje] = useState('Temporal');
+  const [isLoading, setIsLoading] = useState(false)
 
-  //Trae clave mobile y fecha contable
   useEffect(()=>{
     const doFetch = async () => 
       {
         const data_token = await decodeJWT();
         const response = await getNuevoPedidoClave({usuario_codigo: data_token.username});
-        !!response && handleNewSaleOrder({numero: response.code_sale, fcontable: response.fecha, ruc:'', razonsocial:'', telefono: '', fentrega: getFormatShipDate({fechacontable: new Date(response.fecha), moredays: 1}), direccionentrega:'', ructransporte: '', moneda:'', codigogrupo: '', condicionpago:''})
+        !!response && handleNewSaleOrder({cliente_codigo: null, comentarios: {vendedor: '', nota_anticipo: ''}, numero: response.code_sale, fcontable: response.fecha, ruc:'', razonsocial:'', telefono: '', 
+        fentrega: getFormatShipDate({fechacontable: new Date(response.fecha), moredays: 1}), direccionentrega:'', ructransporte: '', moneda:'', 
+        codigogrupo: '', condicionpago:'', products: [], grupo_familia: null, ubicacion: null, montos: {anticipo: 0, descuento: 0, impuesto: 0, nota_credito: 0, total: 0, total_cred_anti: 0,
+        unidad: '', valor_venta: 0}, institucional: {cmp1: '', cmp2: '', cmp3: '', oc: ''}})
       }
+      //obtiene clave  mobile y fecha contable
       doFetch();
+
   },[])
 
-  //guardar OV
-  const guardarOV = async () => {
-    console.log(nuevoPedido)
-    let body = {
-        CardCode: nuevoPedido?.cliente_codigo,
-        DocDueDate: nuevoPedido?.fentrega,
-        U_MSSM_CLM: nuevoPedido?.numero,
-        DiscountPercent: nuevoPedido?.montos?.descuento || 0,
-        Comments: mergeComments(nuevoPedido?.comentarios.vendedor, nuevoPedido?.comentarios.nota_anticipo),
-        PaymentGroupCode: nuevoPedido?.condicionpago[0]?.PaymentGroupCode,
-        FederalTaxID: nuevoPedido?.ruc || '',
-        ShipToCode: nuevoPedido?.direccionentrega[0]?.direccion_codigo || '',
-        U_MSSL_RTR: nuevoPedido?.ructransporte?.documento_transporte || '',
-        U_MSSF_CEX1: nuevoPedido?.institucional?.cmp1,
-        U_MSSF_CEX2: nuevoPedido?.institucional?.cmp2,
-        U_MSSF_CEX3: nuevoPedido?.institucional?.cmp3,
-        U_MSSF_ORDC: nuevoPedido?.institucional?.oc,
-        grupo_familia: nuevoPedido?.grupo_familia,
-        DocumentLines: nuevoPedido?.products?.map((product)=>({
-          ItemCode: product?.codigo,
-          Quantity: product?.cantidad,
-          TaxCode: product?.impuesto?.codigo,
-          UnitPrice: product?.precio,
-          DiscountPercent: product?.dsct_porcentaje,
-          U_MSSC_NV1: product?.dsct_porcentaje,
-          U_MSSC_NV2: 0,
-          U_MSSC_NV3: 0,
-          U_MSSC_DSC: product?.dsct_porcentaje,
-          U_MSS_ITEMBONIF: ('tipo' in product)?'Y':'N',
-          U_MSSC_BONI: ('tipo' in product)?'Y':'N',
-        }))
+  //valida que todos los campos esten correctos OV antes de guardar
+  const validarCampos = async () => {
+    // aca tiene que ir la logica antes de guardar el pedido
+    // verifica si registro cliente
+    if(!!nuevoPedido?.razonsocial){
+        //verifica existe producto en lista
+        if(!!nuevoPedido?.products?.length){
+          //verifica que no haya cambiado de cliente, pendiente actualizacion de descuento
+          if(!isClientChanged.active){
+            setIsLoading(true);
+            let currentLocation = await getCurrentLocation();
+            let body = makeSaleOrderBody(nuevoPedido, currentLocation)
+            const [response, status] = await guardarNuevoPedido(body);
+            //aca se devuelve una respuesta cuando concluye el proceso
+            setIsLoading(false);
+            status !== 200 && alert('Alerta, problemas con el servidor')
+            status === 200 && typeof(response[1]) === 'number' && typeof(response[2]) === 'number' && alert('¡Orden de venta y borrador creados!')
+            status === 200 && typeof(response[1]) === 'number' && typeof(response[2]) !== 'number' && alert('¡Borrador creado!')
+          }else{
+            alert("Debe aplicar descuentos nuevamente")
+            //CHECK IF VARIABLE IS NUMBER?
+          }
+        }else{
+          alert("Debe agregar productos")
+        }
+      }else{
+        alert("Debe registrar un socio de negocios")
+      }
     }
-    console.log(body)
-    const response = await guardarNuevoPedido(body);
-    // let currentLocation = await getCurrentLocation();
-    // // setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
-    // if ('message' in currentLocation){
-    //   setMensaje(currentLocation?.message)
-    // }else{
-    //   setMensaje(`Latitud:${currentLocation.latitud} & Longitud:${currentLocation.longitud}`)
-    // }
-  }
-
-  function onChange(value) {
-    console.log("Captcha value:", value);
-  }
 
   return (
     <>
@@ -102,7 +92,7 @@ export default function NuevoPedido() {
     
     {/* modal general para tipo combo / text field / date */}
     {!!modalValues.tipomodal && (
-      <PedidoModal modalTitle={modalValues.modalTitle} handleClose={()=>handleInputTextModal({show: false})} show={modalValues.show}>
+      <PedidoModal tipomodal={modalValues.tipomodal} size={modalValues.size} modalTitle={modalValues.modalTitle} handleClose={()=>handleInputTextModal({show: false})} show={modalValues.show}>
         {tipoModal[modalValues.tipomodal](nuevoPedido, modalValues, handleInputTextModal, handleNewSaleOrder)}
       </PedidoModal>
     )}
@@ -123,24 +113,23 @@ export default function NuevoPedido() {
       </Accordion.Item>
     </Accordion>
     <div className='tw-flex tw-flex-col tw-items-center tw-border-2'>
-      <button className='button-14 tw-w-2/3 tw-h-10 tw-my-4 tw-font-sans tw-font-medium' disabled={false} style={{margin: '0 auto'}} onClick={guardarOV}>
-        Grabar Orden de Venta
+      <button className='button-14 tw-w-2/3 tw-h-10 tw-my-4 tw-font-sans tw-font-medium' disabled={isLoading?true:false} style={{margin: '0 auto'}} onClick={validarCampos}>
+        {isLoading ? (
+          <>
+            Grabando.....
+            <Spinner animation="grow" role="status" size='sm' className='tw-ml-2'>
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </>
+        ):(
+          <>
+            Grabar Orden de Venta
+          </>
+        )}
       </button>
-      <ReCAPTCHA
-        sitekey="6Lfiy1MqAAAAAHcepIzS3inu4JEisDbyKWfaXuDp"
-        onChange={onChange}
-      />,
     </div>
-    {/* <h1>{mensaje}</h1> */}
     </>
   );
 }
 
 export { NuevoPedido }
-
-// {/* <Accordion.Item eventKey="2">
-//   <Accordion.Header>Total</Accordion.Header>
-//   <Accordion.Body>
-//     <MyListGroup plantilla="nuevopedidototal"/>
-//   </Accordion.Body>
-// </Accordion.Item> */}

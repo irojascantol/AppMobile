@@ -153,7 +153,7 @@ function NuevoPedidoCabecera() {
             <div className='header_section_content' dangerouslySetInnerHTML={{__html: `${retornaDatos(nuevoPedido, "moneda")}&nbsp;`}}/>
             </div>
         </ListGroup.Item>
-        <ListGroup.Item
+        {/* <ListGroup.Item
             as="li"
             className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
             variant="no style"
@@ -162,7 +162,7 @@ function NuevoPedidoCabecera() {
             <div className="header_section_title">Grupo familiar:</div>
             <div className='header_section_content' dangerouslySetInnerHTML={{__html: `${retornaDatos(nuevoPedido, "grupo_familia") || 'NO TIENE'}&nbsp;`}}/>
             </div>
-        </ListGroup.Item>
+        </ListGroup.Item> */}
         <ListGroup.Item
             as="li"
             className="d-flex justify-content-between align-items-start active:tw-border-yellow-400 tw-pl-1"
@@ -432,7 +432,6 @@ function NuevoPedidoProductos(){
         // if (largo_productos){
             let [sum_valorventa, unit] = calcularValorVenta();
             if (!!sum_valorventa && !!unit){
-                //esto ya no tendria que ir
                 let sum_descuento = calcularDescuento(sum_valorventa);
                 let sum_impuesto = calcularImpuestos(sum_valorventa);
                 let total = sum_valorventa - sum_descuento + sum_impuesto;

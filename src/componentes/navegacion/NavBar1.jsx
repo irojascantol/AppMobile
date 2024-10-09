@@ -8,13 +8,30 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Spinner from 'react-bootstrap/Spinner';
+import "../../style/NavBar1.css"
 
 import {
     BsTruck ,
     BsFileEarmarkCheck,
     BsFillPersonFill,
 } from "react-icons/bs";
-import "../../style/NavBar1.css"
+import { getCodigo } from '../../utils/objects';
+import { validaAcceso } from '../../services/usuario';
+import { decodeJWT } from '../../utils/decode';
+
+//viene el codigo de las rutas
+const codigo_permisos = {
+  entrega: {
+    pendiente: {direccion: '/main/entrega/pendientechofer' , codigo: 'DSPTOL'},
+    completo: {direccion: '/main/entrega/completochofer' , codigo: 'DSPTOL'},
+  },
+  pedido: {
+    nuevo: {direccion: '/main/nuevopedido' , codigo: 'COMPED'},
+    pendiente: {direccion: '/main/pedido/pendiente' , codigo: 'COMRPT'},
+    aprobado: {direccion: '/main/pedido/aprobado' , codigo: 'COMRPT'},
+    rechazado: {direccion: '/main/pedido/rechazado' , codigo: 'COMRPT'}, 
+  }
+}
 
 const NavBar1 = () => {
     const navigate = useNavigate()
@@ -28,6 +45,18 @@ const NavBar1 = () => {
     const innerNavigate = (path) => {
       setExpanded(false)
       navigate(path)
+    }
+
+    const navigate2Path = async (route) => {
+      const codigo_modulo = await getCodigo(codigo_permisos, route);
+      const {company: empresa_codigo, username: usuario_login } = await decodeJWT();
+      let body = {
+        usuario_login: usuario_login,
+        empresa_codigo: empresa_codigo,
+        modulo_codigo: codigo_modulo
+      }
+      const {acceso} = await validaAcceso(body)
+      !!acceso ? innerNavigate(route) : alert('No cuenta con permisos para ingresar')
     }
 
     return (
@@ -54,31 +83,41 @@ const NavBar1 = () => {
           </div>
           <Navbar.Collapse id="basic-navbar-nav" expand="xl" className=''>
             <Nav className="me-auto tw-mt-4" expand="xl">
-              <hr></hr>
-              <NavItem className='nav-item-custom-height'>
-                  <div className='nav-item-custom-height tw-w-full' onClick={()=>{innerNavigate('/main/entrega')}}>
-                      <NavLink href="#">Entregas</NavLink>
-                      <i className="tw-ml-2"><BsTruck size={21}/></i>
-                  </div>
-              </NavItem>
+            <hr></hr>
+              <NavDropdown title={<>
+                Entregas
+                <i className="tw-ml-2"><BsTruck size={21}/></i>
+              </>} id="basic-nav-dropdown" className='nav-dropdown-custom-height'>
+                  <NavItem className='nav-item-custom-height'>
+                    <div className='nav-item-custom-height tw-w-full' onClick={()=>{navigate2Path('/main/entrega/pendientechofer')}}>
+                      <NavLink href="#">Pendiente</NavLink>
+                    </div>
+                  </NavItem>
+                  <NavItem className='nav-item-custom-height'>
+                    <div className='nav-item-custom-height tw-w-full' onClick={()=>{navigate2Path('/main/entrega/completochofer')}}>
+                      <NavLink href="#">Completado</NavLink>
+                      <i className="tw-ml-2"><BsFileEarmarkCheck size={21}/></i>
+                    </div>
+                  </NavItem>
+              </NavDropdown>
               <hr></hr>
               <NavDropdown title="Pedidos" id="basic-nav-dropdown" className='nav-dropdown-custom-height'>
                   <NavItem className='nav-item-custom-height'>
-                    <div className='nav-item-custom-height tw-w-full' onClick={()=>{innerNavigate('/main/nuevopedido')}}>
+                    <div className='nav-item-custom-height tw-w-full' onClick={()=>{navigate2Path('/main/nuevopedido')}}>
                       <NavLink href="#">Nuevo pedido</NavLink>
                       <i className="tw-ml-2"><BsFileEarmarkCheck size={21}/></i>
                     </div>
                   </NavItem>
                   <NavDropdown title="Estados" id="basic-nav-dropdown" className='nav-dropdown-custom-height'>
-                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); innerNavigate('/main/pedido/aprobado')}}>
+                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); navigate2Path('/main/pedido/aprobado')}}>
                         <NavDropdown.Item href="#">Aprobados</NavDropdown.Item>
                       </div>
                       <NavDropdown.Divider />
-                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); innerNavigate('/main/pedido/pendiente')}}>
+                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); navigate2Path('/main/pedido/pendiente')}}>
                         <NavDropdown.Item href="#">Pendientes</NavDropdown.Item>
                       </div>
                       <NavDropdown.Divider />
-                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); innerNavigate('/main/pedido/rechazado')}}>
+                      <div className='tw-w-full' onClick={()=>{handlePedidoCarusel(0); navigate2Path('/main/pedido/rechazado')}}>
                         <NavDropdown.Item href="#">Rechazados</NavDropdown.Item>
                       </div>
                   </NavDropdown>

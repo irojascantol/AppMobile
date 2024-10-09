@@ -4,7 +4,7 @@ import ProtectedRoute from "../componentes/seguridad/VentanaProteccion";
 import { NavBar1 } from "../componentes/navegacion/NavBar1";
 import NuevoPedido from "../pages/pedido/nuevopedido";
 import ReportePedido from "../pages/pedido/reportePedido";
-import Entrega from "../pages/operaciones/entrega";
+import Operacion from "../pages/entrega/Operacion";
 import { NotFound } from "../pages/defecto/NotFound";
 
 export function MiRutas() {
@@ -14,7 +14,7 @@ export function MiRutas() {
             <Route path="/" element={<LoginForm/>} />
             <Route path="/login" element={<LoginForm/>} />
             <Route path="/main"element={<NavBar1/>}>
-                <Route path="entrega" element={<Entrega/>}/>
+                <Route path="entrega/:estado" element={<Operacion/>}/>
                 <Route path="nuevopedido" element={<NuevoPedido/>}/>
                 <Route path="pedido/:reporte" element={<ReportePedido/>}/>
             <Route path="*" element={<NotFound/>} />

@@ -165,20 +165,20 @@ async function guardarNuevoPedido(requestBody) {
     try{
         const response = await axios.post(`${mainURL}/comercial/ventas/pedido/grabarordenventa`, requestBody);
         if (!!response.data && response.status === 200){
-            return response.data;
+            return [response.data, response.status];
         }else
         {
-            return null;
+            return [null, response.status];
         }
     }catch(error){
         console.log(`An Error ocurred: (getDetallePedidoLogistica) _ ${error}`);
-        return null;
+        return [null, response.status];
     }
 }
 
 async function obtenerDescuentoDocumento(requestBody) {
     try{
-        const response = await axios.post(`${mainURL}/comercial/ventas/pedido/aplicardescuentodocumento`, requestBody);
+        const response = await axios.post(`${mainURL}/comercial/ventas/pedido/aplicardescuentodocumento`, requestBody, {timeout: 10000});
         if (!!response.data && response.status === 200){
             return response.data;
         }else
@@ -190,6 +190,7 @@ async function obtenerDescuentoDocumento(requestBody) {
         return null;
     }
 }
+
 
 export {getPedido, 
         getDetallePedidoGeneral, 

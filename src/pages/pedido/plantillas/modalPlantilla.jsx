@@ -15,6 +15,9 @@ import { upSelectedOption } from '../../../utils/array';
 import { commercialContext } from '../../../context/ComercialContext';
 import { getCreditoAnticipo, obtenerDescuentoDocumento } from '../../../services/pedidoService';
 import { useAsyncError } from 'react-router-dom';
+import { mergeComments } from '../utils';
+import ReCAPTCHA from 'react-google-recaptcha';
+import { getCurrentLocation } from '../../../utils/location';
 
 
 const fetchFunctions = {
@@ -31,7 +34,7 @@ const body = {
                 <div className='text-secondary tw-font-medium tw-text-sm'>{item.codigo}</div>
                 <div className='tw-flex tw-justify-between'>
                     <div className='text-secondary tw-font-medium tw-text-sm'>Precio: <span className='text-dark'>{item?.unidad_moneda} {item.precio}</span></div>
-                    <div className='text-secondary tw-font-medium tw-text-sm'>Stock: <span className='text-dark'>{item.stock}</span></div>
+                    <div className='text-secondary tw-font-medium tw-text-sm'>Stock Real: <span className='text-dark'>{item.stock}</span></div>
                 </div>
                 </>),
     Transportista:  (item)=>(<>
@@ -155,7 +158,7 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
             let tmpList = buscarModalValues.options[0]?.products;
             if(tmpList.findIndex((item_list)=>(item_list.codigo === item.codigo)) === -1){
                 //abre el modal para ingresar la cantidad
-                handleInputTextModal({show: true, modalTitle: 'Ingrese cantidad', tipomodal: 'text', operacion: 'agregarProducto', returnedValue: null})
+                handleInputTextModal({show: true, modalTitle: 'Ingrese cantidad', tipomodal: 'text', operacion: 'agregarProducto', returnedValue: null, options: {stock: item.stock}})
                 //graba el item seleccionado para grabar cantidad en useeffect
                 setCurrentItem(item)
 
@@ -174,7 +177,12 @@ function BuscarModal({buscarModalValues, handleNewSaleOrder, handleCloseModal}) 
                 if (!!descuentoDoc){
                     //activa el caso de que se cambie un cliente, debe actualizas descuentos
                     if(!!isClientChanged.dsct){handleClienteChange({active: true})}
-                    handleNewSaleOrder({...fillData[buscarModalValues?.operacion](item, nuevoPedido), montos: {...nuevoPedido.montos, descuento: descuentoDoc?.descuento_documento, anticipo: 0, nota_credito: 0, total_cred_anti: (nuevoPedido?.montos.total || 0)}});
+                    handleNewSaleOrder({...fillData[buscarModalValues?.operacion](item, nuevoPedido), montos: {...nuevoPedido.montos,
+                        descuento: descuentoDoc?.descuento_documento, 
+                        anticipo: 0, nota_credito: 0, 
+                        total_cred_anti: (nuevoPedido?.montos.total || 0)},
+                        comentarios: {...nuevoPedido.comentarios, nota_anticipo: ''}, 
+                    });
                     handleCloseModal();
                 }else{
                     handleNewSaleOrder(fillData[buscarModalValues?.operacion](item, nuevoPedido));
@@ -252,7 +260,11 @@ function IngresarTexto({modalValues, handleInputTextModal, handleNewSaleOrder, t
                         handleNewSaleOrder({comentarios: {...modalValues?.options, vendedor: value.toString().trim()}}); 
                         handleInputTextModal({show: false});
                     }else if(modalValues.operacion === 'agregarProducto'){
-                        handleInputTextModal({show: false, returnedValue: value});
+                        if(value > modalValues?.options?.stock){
+                            alert('La cantidad debe ser menor al stock')
+                        }else{
+                            handleInputTextModal({show: false, returnedValue: value});
+                        }
                     }else{
                         handleNewSaleOrder({ructransporte: value}); 
                         handleInputTextModal({show: false});
@@ -382,7 +394,9 @@ function Institucional_Campo(params){
 
     const guardarDatosInstitucional = () => {
         //oc obligatorio
-        if(input.oc){
+        //quita espacio en blanco
+        let newOc = input.oc.trim();
+        if(!!newOc.length){
             params.handleNewSaleOrder({institucional: input})
             params.handleInputTextModal({show: false})
             // params.handleInputTextModal({show: false, returnedValue: {body: input}})
@@ -427,5 +441,76 @@ function Institucional_Campo(params){
         </ListGroup>
     )
 }
+
+// // function Final_Pedido({
+// //     nuevopedido,
+// //     modalValues,
+// //     handleInputTextModal,
+// //     handleNewSaleOrder,
+// // }){
+    // const guardarOV = async () => {
+        //obtiene latitud y longitud
+        // let currentLocation = await getCurrentLocation();
+        // //crea cuerpo de post para enviar al SL
+        // let body = {
+        //     CardCode: nuevopedido?.cliente_codigo,
+        //     DocDueDate: nuevopedido?.fentrega,
+        //     U_MSSM_CLM: nuevopedido?.numero,
+        //     DiscountPercent: nuevopedido?.montos?.descuento || 0,
+        //     Comments: mergeComments(nuevopedido?.comentarios.vendedor, nuevopedido?.comentarios.nota_anticipo),
+        //     PaymentGroupCode: nuevopedido?.condicionpago[0]?.PaymentGroupCode,
+        //     FederalTaxID: nuevopedido?.ruc || '',
+        //     ShipToCode: nuevopedido?.direccionentrega[0]?.direccion_codigo || '',
+        //     U_MSSL_RTR: nuevopedido?.ructransporte?.documento_transporte || '',
+        //     U_MSSF_CEX1: nuevopedido?.institucional?.cmp1,
+        //     U_MSSF_CEX2: nuevopedido?.institucional?.cmp2,
+        //     U_MSSF_CEX3: nuevopedido?.institucional?.cmp3,
+        //     U_MSSF_ORDC: nuevopedido?.institucional?.oc,
+        //     grupo_familia: nuevopedido?.grupo_familia,
+        //     ubicacion: nuevopedido?.ubicacion,
+        //     U_DIS_LATITU: currentLocation?.latitud?.toString() || null,
+        //     U_DIS_LONGIT: currentLocation?.longitud?.toString() || null,
+        //     DocumentLines: nuevopedido?.products?.map((product)=>({
+        //       ItemCode: product?.codigo,
+        //       Quantity: product?.cantidad,
+        //       TaxCode: product?.impuesto?.codigo,
+        //       UnitPrice: product?.precio,
+        //       DiscountPercent: product?.dsct_porcentaje,
+        //       U_MSSC_NV1: product?.dsct_porcentaje,
+        //       U_MSSC_NV2: 0,
+        //       U_MSSC_NV3: 0,
+        //       U_MSSC_DSC: product?.dsct_porcentaje,
+        //       U_MSS_ITEMBONIF: ('tipo' in product)?'Y':'N',
+        //       U_MSSC_BONI: ('tipo' in product)?'Y':'N',
+        //     }))
+        // }
+// //         console.log(body)
+// //         const response = await guardarNuevoPedido(body);
+// //     }
+// //     // funcion para el catpcha
+
+// //     function onChange(value) {
+// //       console.log("Captcha value:", value);
+// //     }
+
+// //     return(
+// //         <>
+// //         <div className='tw-h-20'>
+// //             <ReCAPTCHA
+// //               sitekey="6Lfiy1MqAAAAAHcepIzS3inu4JEisDbyKWfaXuDp"
+// //               onChange={onChange}
+// //               style={{transform: 'scale(.89)', transformOrigin: '0 0'}}
+// //             />,
+// //         </div>
+// //         <div>
+// //             <button className='button-14 tw-w-full tw-h-10 tw-my-4 tw-font-sans tw-font-medium' disabled={false} style={{margin: '0 auto'}} onClick={guardarOV}>
+// //                 Validar Operación
+// //             </button>
+// //         </div>
+// //         </>
+// //     )
+// // }
+
+
 
 export {BuscarModal, IngresarTexto, IngresarFecha, SelectorCombo, Anticipo_Credito, Institucional_Campo}
