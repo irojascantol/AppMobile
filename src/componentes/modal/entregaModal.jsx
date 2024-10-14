@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 function EntregaModal({size, children, handleClose, show, modalTitle}) {
   return (
     <>
-      <Modal size={size} show={show} onHide={handleClose} backdrop="static">
+      <Modal size={size} show={show} onHide={handleClose} backdrop='static'>
         <Modal.Header closeButton>
           <Modal.Title>{modalTitle}</Modal.Title>
         </Modal.Header>

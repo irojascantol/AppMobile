@@ -43,7 +43,7 @@ function MyListGroup({data, plantilla, handleCarusel, tipoPedido, modalValues, h
       <ListGroup as="ol">
         {data.map((item, index)=>(
             <li key={(index + 1).toString()} onClick={()=>{
-              handleModal({show: true, modalTitle: 'Seleccione operación',tipomodal: 'selector', options: item?.numero_documento});
+              handleModal({show: true, modalTitle: 'Seleccione operación',tipomodal: 'selector', options: {numero_documento: item?.numero_documento, DocEntry: item?.DocEntry, tipo_moneda: item?.tipo_moneda}});
               }}>
                 {plantillas[plantilla](item)}
             </li>
